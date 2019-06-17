@@ -22,9 +22,9 @@ class Office:
     ]
 
     def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        from office import localres
+        from office import resources
 
-        self.address, self.resources = email_address, localres
+        self.address, self.resources = email_address, resources
         self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials.pkl")
         self._blobs: BlobStorage = None
 
