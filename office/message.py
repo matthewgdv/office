@@ -24,6 +24,9 @@ class Message(message.Message):
     def __repr__(self) -> str:
         return f"{type(self).__name__}(subject={repr(self.subject)}, from={repr(self.sender.address)}, is_read={self.is_read}, importance={repr(self.importance.value)}, attachments={len(self.attachments)}, received={self.received})"
 
+    def __str__(self) -> str:
+        return self.text
+
     def _repr_html_(self) -> str:
         return f"<strong><mark>{self.subject}</mark></strong><br><br>{self.body}"
 
