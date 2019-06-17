@@ -115,3 +115,6 @@ dmypy.json
 
 # Local Resources (often holding credentials)
 localres/
+
+# Temporary workfolders
+__workfolders__/
