@@ -4,7 +4,7 @@ from typing import Tuple
 
 import webbrowser
 from pathmagic import Dir
-from miscutils import Supressor, Secrets
+from miscutils import Supressor, Secrets, LazyProperty
 
 with Supressor():
     import O365 as off
@@ -26,7 +26,6 @@ class Office:
 
         self.address, self.resources = email_address, resources
         self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials.pkl")
-        self._blobs: BlobStorage = None
 
         if self.credfile:
             self.authenticate()
@@ -42,12 +41,9 @@ class Office:
     def credentials(self, val: Tuple[str, str]) -> None:
         Secrets(self.credfile).encrypt(val)
 
-    @property
+    @LazyProperty
     def blobs(self) -> BlobStorage:
-        if self._blobs is None:
-            self._blobs = BlobStorage(self)
-
-        return self._blobs
+        return BlobStorage(self)
 
     def request_token(self) -> None:
         auth_url = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
@@ -67,14 +63,11 @@ class Manager:
 class Outlook(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self._folders: MessageFolders = None
         self._signature = self.office.resources.f.signature
 
-    @property
+    @LazyProperty
     def folders(self) -> MessageFolders:
-        if self._folders is None:
-            self._folders = MessageFolders(self.office)
-        return self._folders
+        return MessageFolders(self.office)
 
     @property
     def signature(self) -> str:
@@ -92,14 +85,11 @@ class Outlook(Manager):
 class People(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self._folders: ContactFolders = None
         self.contacts = ContactNameSpace(self.office)
 
-    @property
+    @LazyProperty
     def folders(self) -> ContactFolders:
-        if self._folders is None:
-            self._folders = ContactFolders(self.office)
-        return self._folders
+        return ContactFolders(self.office)
 
 
 class BlobStorage(Manager):

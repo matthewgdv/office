@@ -35,7 +35,7 @@ class Message(message.Message):
         return str(Str(Markup(self.body).text).sub(r"<!--.*?-->", "").sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
 
     @property
-    def soup(self) -> Markup:
+    def markup(self) -> Markup:
         return Markup(self.body)
 
     def reply(self, *args: Any, **kwargs: Any) -> FluentMessage:

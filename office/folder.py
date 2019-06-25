@@ -5,6 +5,8 @@ from typing import Any, List, TYPE_CHECKING
 import O365.mailbox as mailbox
 import O365.address_book as address_book
 
+from miscutils import LazyProperty
+
 from .attribute import Attribute, NonFilterableAttribute
 from .message import Message, MessageQuery
 from .contact import Contact, ContactQuery
@@ -97,55 +99,46 @@ class MessageFolders(Folders):
         super().__init__(office=office)
         self._mailbox = office.account.mailbox()
         self._mailbox.folder_constructor = MessageFolder
-        self._main = self._inbox = self._outbox = self._sent = self._drafts = self._junk = self._deleted = None  # type: MessageFolder
 
-    @property
+    @LazyProperty
     def main(self) -> MessageFolder:
-        if self._main is None:
-            self._main = MessageFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox', root=True, office=self.office)
-        return self._main
+        return MessageFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox', root=True, office=self.office)
 
-    @property
+    @LazyProperty
     def inbox(self) -> MessageFolder:
-        if self._inbox is None:
-            self._inbox = self._mailbox.inbox_folder()
-            self._inbox.office = self.office
-        return self._inbox
+        folder = self._mailbox.inbox_folder()
+        folder.office = self.office
+        return folder
 
-    @property
+    @LazyProperty
     def outbox(self) -> MessageFolder:
-        if self._outbox is None:
-            self._outbox = self._mailbox.outbox_folder()
-            self._outbox.office = self.office
-        return self._outbox
+        folder = self._mailbox.outbox_folder()
+        folder.office = self.office
+        return folder
 
-    @property
+    @LazyProperty
     def sent(self) -> MessageFolder:
-        if self._sent is None:
-            self._sent = self._mailbox.sent_folder()
-            self._sent.office = self.office
-        return self._sent
+        folder = self._mailbox.sent_folder()
+        folder.office = self.office
+        return folder
 
-    @property
+    @LazyProperty
     def drafts(self) -> MessageFolder:
-        if self._drafts is None:
-            self._drafts = self._mailbox.drafts_folder()
-            self._drafts.office = self.office
-        return self._drafts
+        folder = self._mailbox.drafts_folder()
+        folder.office = self.office
+        return folder
 
-    @property
+    @LazyProperty
     def junk(self) -> MessageFolder:
-        if self._junk is None:
-            self._junk = self._mailbox.junk_folder()
-            self._junk.office = self.office
-        return self._junk
+        folder = self._mailbox.junk_folder()
+        folder.office = self.office
+        return folder
 
-    @property
+    @LazyProperty
     def deleted(self) -> MessageFolder:
-        if self._deleted is None:
-            self._deleted = self._mailbox.deleted_folder()
-            self._deleted.office = self.office
-        return self._deleted
+        folder = self._mailbox.deleted_folder()
+        folder.office = self.office
+        return folder
 
     def custom(self, folder_name: str = None, folder_id: int = None) -> MessageFolder:
         folder = self._mailbox.get_folder(folder_name=folder_name, folder_id=folder_id)
@@ -158,20 +151,16 @@ class ContactFolders(Folders):
         super().__init__(office=office)
         self._book = office.account.address_book()
         self._book.contact_constructor, self._book.message_constructor = Contact, Message
-        self._main = self._global = None  # type: ContactFolder
 
-    @property
+    @LazyProperty
     def main(self) -> ContactFolder:
-        if self._main is None:
-            self._main = ContactFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='AddressBook', root=True, office=self.office)
-        return self._main
+        return ContactFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='AddressBook', root=True, office=self.office)
 
-    @property
+    @LazyProperty
     def global_(self) -> ContactFolder:
-        if self._global is None:
-            self._global = self.office.account.address_book(address_book="gal")
-            self._global.office = self.office
-        return self._global
+        folder = self.office.account.address_book(address_book="gal")
+        folder.office = self.office
+        return folder
 
 
 class BulkFolderAction(BulkAction):
@@ -199,7 +188,7 @@ class FolderQuery(Query):
         super().execute()
         folders = list(self._container.get_folders(limit=self._limit, query=self._query, order_by=self._order))
         for folder in folders:
-            folder.office = self._container.Office
+            folder.office = self._container.office
 
         return folders
 
