@@ -14,6 +14,8 @@ if True:
     from .fluent import FluentMessage
     from .folder import MessageFolders, ContactFolders
 
+    from office import localres
+
 
 class Office:
     scopes = [
@@ -23,10 +25,8 @@ class Office:
     ]
 
     def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        from office import resources
-
-        self.address, self.resources = email_address, resources
-        self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials.pkl")
+        self.address, self.resources = email_address, Dir.from_package(localres)
+        self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials", "pkl")
 
         if self.credfile:
             self.authenticate()
@@ -64,7 +64,7 @@ class Manager:
 class Outlook(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self._signature = self.office.resources.f.signature
+        self._signature = self.office.resources.newfile("signature", "html")
 
     @LazyProperty
     def folders(self) -> MessageFolders:
@@ -96,7 +96,7 @@ class People(Manager):
 class BlobStorage(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self.credfile = self.office.resources.newfile("blob_credentials.pkl")
+        self.credfile = self.office.resources.newfile("blob_credentials", "pkl")
 
         if self.credfile:
             self.authenticate()
