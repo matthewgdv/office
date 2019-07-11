@@ -6,7 +6,7 @@ import O365.message as message
 import O365.utils.utils as utils
 from subtypes import Str, Markup
 from pathmagic import Dir, PathLike
-from easygui import HtmlGui
+from iotools import HtmlGui
 
 from .attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
 from .query import Query, BulkAction, BulkActionContext
