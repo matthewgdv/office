@@ -4,6 +4,7 @@ from typing import Any, List, TYPE_CHECKING
 
 import O365.message as message
 import O365.utils.utils as utils
+
 from subtypes import Str, Markup
 from pathmagic import Dir, PathLike
 from iotools import HtmlGui
@@ -32,7 +33,7 @@ class Message(message.Message):
 
     @property
     def text(self) -> str:
-        return str(Str(Markup(self.body).text).sub(r"<!--.*?-->", "").sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
+        return str(Str(Markup(self.body).text).re.sub(r"<!--.*?-->", "").re.sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
 
     @property
     def markup(self) -> Markup:

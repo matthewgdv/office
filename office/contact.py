@@ -87,8 +87,8 @@ class ContactNameSpace(NameSpace):
 
         contacts_by_name: Dict[str, List[Contact]] = {}
         for contact in book.get_contacts():
-            contacts_by_name.setdefault(Str(contact.name).snake_case().strip(), []).append(contact)
-            contacts_by_name.setdefault(Str(contact.display_name).snake_case().strip(), []).append(contact)
+            contacts_by_name.setdefault(Str(contact.name).case.snake(), []).append(contact)
+            contacts_by_name.setdefault(Str(contact.display_name).case.snake(), []).append(contact)
 
         mappings = {}
         for name, contacts in contacts_by_name.items():

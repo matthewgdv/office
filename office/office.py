@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Tuple
 
 import webbrowser
+
 from pathmagic import Dir
 from miscutils import Supressor, Secrets, LazyProperty
 

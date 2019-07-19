@@ -4,6 +4,7 @@ import contextlib
 from typing import Any, Callable, Collection, Generator, Tuple
 
 import O365.utils.utils as utils
+
 from maybe import Maybe
 
 from .attribute import BaseAttribute, Attribute, FilterableAttribute, BooleanExpression, BooleanExpressionClause
