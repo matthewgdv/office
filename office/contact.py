@@ -96,7 +96,7 @@ class ContactNameSpace(NameSpace):
                 contacts[0].office = self._office
                 mappings[name] = contacts[0]
 
-        super().__init__(mappings=mappings)
+        super().__init__(mappings)
 
 
 class ContactQuery(Query):
