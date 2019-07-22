@@ -11,11 +11,10 @@ with Supressor():
     import O365 as off
 
 if True:
+    from .appdata import appdata
     from .contact import ContactNameSpace
     from .fluent import FluentMessage
     from .folder import MessageFolders, ContactFolders
-
-    from office import localres
 
 
 class Office:
@@ -26,7 +25,7 @@ class Office:
     ]
 
     def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        self.address, self.resources = email_address, Dir.from_package(localres)
+        self.address, self.resources = email_address, appdata
         self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials", "txt")
 
         if self.credfile:
