@@ -160,6 +160,7 @@ class ContactFolders(Folders):
     def global_(self) -> ContactFolder:
         folder = self.office.account.address_book(address_book="gal")
         folder.office = self.office
+        folder.contact_constructor = Contact
         return folder
 
 

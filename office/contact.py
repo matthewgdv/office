@@ -25,6 +25,9 @@ class Contact(address_book.Contact):
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name={repr(self.full_name)}, email={repr(self.main_email)})"
 
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def message(self) -> FluentMessage:
         message = self.new_message()
