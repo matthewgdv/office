@@ -78,6 +78,14 @@ class ContactFolder(address_book.ContactFolder, Folder):
     def contacts(self) -> ContactQuery:
         return ContactQuery(container=self)
 
+    def from_address(self, address: str) -> Contact:
+        contact = self.get_contact_by_email(address)
+        if contact is None:
+            return None
+        else:
+            contact.office = self.office
+            return contact
+
     class Attributes:
         class Name(Attribute):
             name = "display_name"
