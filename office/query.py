@@ -14,7 +14,7 @@ class Query:
     def __init__(self, container: Any) -> None:
         self._container = container
         self._casing_function = self._container.protocol.casing_function
-        self._query: utils.Query = None
+        self._query = utils.Query(protocol=self._container.protocol)
         self._select: Tuple[BaseAttribute, ...] = None
         self._where: BooleanExpressionClause = None
         self._order: str = None
@@ -54,7 +54,6 @@ class Query:
         return self
 
     def execute(self) -> Any:
-        self._query = utils.Query(protocol=self._container.protocol)
         self._build_select_clause()
         self._build_where_clause()
 
