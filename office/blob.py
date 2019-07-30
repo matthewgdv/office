@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from typing import Any, TYPE_CHECKING
 
-from maybe import Maybe
 from pathmagic import File, PathLike
 from miscutils import NameSpace
 
@@ -22,10 +21,10 @@ class BlobContainer:
         self.raw, self.name, self.manager = container, container.name, blob_manager
         self.service = self.manager.service
 
-        self._cached_len = None
+        self._cached_len = len(self)
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={self.name}, num_blobs={Maybe(self._cached_len).else_('?')})"
+        return f"{type(self).__name__}(name={repr(self.name)}, num_blobs={self._cached_len})"
 
     def __str__(self) -> str:
         return self.name
