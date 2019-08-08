@@ -20,11 +20,10 @@ class BlobContainer:
     def __init__(self, container: Any, blob_manager: BlobStorage) -> None:
         self.raw, self.name, self.manager = container, container.name, blob_manager
         self.service = self.manager.service
-
-        self._cached_len = len(self)
+        self._cached_len = 0
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={repr(self.name)}, num_blobs={self._cached_len})"
+        return f"{type(self).__name__}(name={repr(self.name)}, num_blobs={self._cached_len or '?'})"
 
     def __str__(self) -> str:
         return self.name
