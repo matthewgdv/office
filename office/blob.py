@@ -51,6 +51,7 @@ class BlobContainer:
 
     def upload_blob_from(self, blob_name: str, path: PathLike) -> Blob:
         self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=os.fspath(path))
+        return self[blob_name]
 
 
 class Blob:
