@@ -50,7 +50,12 @@ class BlobContainer:
         return File.from_pathlike(path)
 
     def upload_blob_from(self, blob_name: str, path: PathLike) -> Blob:
-        self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=os.fspath(path))
+        from azure.storage.blob.models import ContentSettings
+
+        file = File(path)
+        content_type = self.manager.blob_type_mappings[file.extension]
+        self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
+
         return self[blob_name]
 
 

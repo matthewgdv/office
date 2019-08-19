@@ -4,7 +4,7 @@ from typing import Tuple
 
 import webbrowser
 
-from pathmagic import Dir
+from pathmagic import Dir, File
 from miscutils import Supressor, Secrets, LazyProperty
 
 with Supressor():
@@ -15,6 +15,7 @@ if True:
     from .contact import ContactNameSpace
     from .fluent import FluentMessage
     from .folder import MessageFolders, ContactFolders
+    from office import resources
 
 
 class Office:
@@ -97,6 +98,7 @@ class BlobStorage(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
         self.credfile = self.office.resources.newfile("blob_credentials", "txt")
+        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
 
         if self.credfile:
             self.authenticate()
