@@ -11,7 +11,7 @@ with Supressor():
     import O365 as off
 
 if True:
-    from .appdata import appdata
+    from .config import Config
     from .contact import ContactNameSpace
     from .fluent import FluentMessage
     from .folder import MessageFolders, ContactFolders
@@ -26,7 +26,8 @@ class Office:
     ]
 
     def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        self.address, self.resources = email_address, appdata
+        self.config = Config()
+        self.address, self.resources = email_address, self.config.appdata
         self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials", "txt")
 
         if self.credfile:
@@ -45,7 +46,7 @@ class Office:
 
     @LazyProperty
     def blobs(self) -> BlobStorage:
-        return BlobStorage(self)
+        return BlobStorage()
 
     def request_token(self) -> None:
         auth_url = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
@@ -94,27 +95,17 @@ class People(Manager):
         return ContactFolders(self.office)
 
 
-class BlobStorage(Manager):
-    def __init__(self, office: Office) -> None:
-        super().__init__(office=office)
-        self.credfile = self.office.resources.newfile("blob_credentials", "txt")
+class BlobStorage:
+    def __init__(self, account: str = None, config: Config = None) -> None:
         self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
 
-        if self.credfile:
-            self.authenticate()
-
-    @property
-    def credentials(self) -> Tuple[str, str]:
-        return Secrets(self.credfile).decrypt()
-
-    @credentials.setter
-    def credentials(self, val: Tuple[str, str]) -> None:
-        Secrets(self.credfile).encrypt(val)
+        self.config = Config() if config is None else config
+        self.account = self.config.data.default_account if account is None else account
+        self.authenticate()
 
     def authenticate(self) -> None:
         import azure.storage.blob as blob
         from .blob import BlobContainerNameSpace
 
-        name, key = self.credentials
-        self.blob, self.service = blob, blob.BlockBlobService(account_name=name, account_key=key)
+        self.blob, self.service = blob, blob.BlockBlobService(account_name=self.account, account_key=self.config.data.accounts[self.account].password)
         self.containers = BlobContainerNameSpace(self)

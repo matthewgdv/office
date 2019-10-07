@@ -70,3 +70,6 @@ class Blob:
     def download_to(self, path: PathLike) -> PathLike:
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=os.fspath(path))
         return File.from_pathlike(path)
+
+    def delete(self) -> None:
+        self.service.delete_blob(container_name=self.container.name, blob_name=self.name)
