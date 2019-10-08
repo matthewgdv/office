@@ -4,6 +4,7 @@ from typing import Tuple
 
 import webbrowser
 
+from maybe import Maybe
 from pathmagic import Dir, File
 from miscutils import Supressor, Secrets, LazyProperty
 
@@ -26,9 +27,8 @@ class Office:
     ]
 
     def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        self.config = Config()
-        self.address, self.resources = email_address, self.config.appdata
-        self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.resources.newfile("credentials", "txt")
+        self.config, self.address = Config(), email_address
+        self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.config.appdata.newfile("credentials", "txt")
 
         if self.credfile:
             self.authenticate()
@@ -66,7 +66,7 @@ class Manager:
 class Outlook(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self._signature = self.office.resources.newfile("signature", "html")
+        self._signature = self.office.config.appdata.newfile("signature", "html")
 
     @LazyProperty
     def folders(self) -> MessageFolders:
@@ -96,16 +96,18 @@ class People(Manager):
 
 
 class BlobStorage:
-    def __init__(self, account: str = None, config: Config = None) -> None:
+    def __init__(self, connection: str = None) -> None:
         self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
 
-        self.config = Config() if config is None else config
-        self.account = self.config.data.default_account if account is None else account
+        self.config = Config()
+        self.connection = Maybe(connection).else_(self.config.data.default_connection)
+
         self.authenticate()
 
     def authenticate(self) -> None:
         import azure.storage.blob as blob
         from .blob import BlobContainerNameSpace
 
-        self.blob, self.service = blob, blob.BlockBlobService(account_name=self.account, account_key=self.config.data.accounts[self.account].password)
+        settings = self.config.data.connections[self.connection]
+        self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
         self.containers = BlobContainerNameSpace(self)
