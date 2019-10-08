@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Tuple
-
 import webbrowser
 
 from maybe import Maybe
 from pathmagic import Dir, File
-from miscutils import Supressor, Secrets, LazyProperty
+from miscutils import Supressor, LazyProperty
 
 with Supressor():
     import O365 as off
@@ -26,36 +24,26 @@ class Office:
         "Files.ReadWrite", "Files.ReadWrite.All", "Sites.Read.All", "Sites.ReadWrite.All",
     ]
 
-    def __init__(self, email_address: str = "matt.gdv@optimaconnect.co.uk") -> None:
-        self.config, self.address = Config(), email_address
-        self.token, self.credfile = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt"), self.config.appdata.newfile("credentials", "txt")
+    def __init__(self, email_address: str = None, connection: str = None) -> None:
+        self.token = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt")
 
-        if self.credfile:
-            self.authenticate()
+        self.config = Config()
+        self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
+
+        settings = self.config.data.connections.office[self.connection]
+
+        self.address = Maybe(email_address).else_(settings.default_email)
+        self.account = off.Account((settings.id, settings.secret), main_resource=self.address, token_backend=self.token)
+
+        self.outlook, self.people = Outlook(self), People(self)
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(account={self.address})"
-
-    @property
-    def credentials(self) -> str:
-        return Secrets(self.credfile).decrypt()
-
-    @credentials.setter
-    def credentials(self, val: Tuple[str, str]) -> None:
-        Secrets(self.credfile).encrypt(val)
-
-    @LazyProperty
-    def blobs(self) -> BlobStorage:
-        return BlobStorage()
 
     def request_token(self) -> None:
         auth_url = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
         webbrowser.open(auth_url)
         self.account.connection.request_token(input("Please follow the link that will open momentarily and grant permission. Then enter the url of the inbox page you land on.\n\n"))
-
-    def authenticate(self) -> None:
-        self.account = off.Account(self.credentials, main_resource=self.address, token_backend=self.token)
-        self.outlook, self.people = Outlook(self), People(self)
 
 
 class Manager:
@@ -108,6 +96,6 @@ class BlobStorage:
         import azure.storage.blob as blob
         from .blob import BlobContainerNameSpace
 
-        settings = self.config.data.connections[self.connection]
+        settings = self.config.data.connections.blob[self.connection]
         self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
         self.containers = BlobContainerNameSpace(self)
