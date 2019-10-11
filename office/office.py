@@ -25,7 +25,7 @@ class Office:
     ]
 
     def __init__(self, email_address: str = None, connection: str = None) -> None:
-        self.token = off.FileSystemTokenBackend(token_path=Dir.from_home().path, token_filename="o365_token.txt")
+        self.token = off.FileSystemTokenBackend(token_path=str(Dir.from_home()), token_filename="o365_token.txt")
 
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
