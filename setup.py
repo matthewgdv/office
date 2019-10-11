@@ -9,9 +9,9 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="office",
+    name="office365",
     version=__version__,
-    description="[short_project_description]",
+    description="A wrapper around O365 offering subclasses with additional utility methods.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/matthewgdv/office",
@@ -25,6 +25,8 @@ setup(
     install_requires=[
 
     ],
+    setup_requires=['setuptools_scm'],
+    include_package_data=True,
     author="Matt GdV",
     author_email="matthewgdv@gmail.com"
 )

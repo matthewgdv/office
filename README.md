@@ -1,26 +1,26 @@
 Overview
 ====================
 
-[overview]
+A wrapper around the incredible O365 library (https://github.com/O365/python-o365) for using Outlook and People services (for now). Provides a config class for handling credentials and persisting them to the drive, a query interface similar to SQLAlchemy, and subclasses of many O365 classes with additional functionality.
 
 Installation
 ====================
 
 To install use pip:
 
-    $ pip install [project_name]
+    $ pip install office365
 
 
 Or clone the repo:
 
-    $ git clone https://github.com/matthewgdv/[project_name].git
+    $ git clone https://github.com/matthewgdv/office.git
     $ python setup.py install
 
 
 Usage
 ====================
 
-[Usage]
+Usage coming soon...
 
 Contributing
 ====================
