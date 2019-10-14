@@ -54,7 +54,7 @@ class Manager:
 class Outlook(Manager):
     def __init__(self, office: Office) -> None:
         super().__init__(office=office)
-        self._signature = self.office.config.appdata.newfile("signature", "html")
+        self._signature = self.office.config.appdata.new_file("signature", "html")
 
     @LazyProperty
     def folders(self) -> MessageFolders:
