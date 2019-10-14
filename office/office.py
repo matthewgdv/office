@@ -3,7 +3,7 @@ from __future__ import annotations
 import webbrowser
 
 from maybe import Maybe
-from pathmagic import Dir, File
+from pathmagic import Dir
 from miscutils import Supressor, LazyProperty
 
 with Supressor():
@@ -14,7 +14,6 @@ if True:
     from .contact import ContactNameSpace
     from .fluent import FluentMessage
     from .folder import MessageFolders, ContactFolders
-    from office import resources
 
 
 class Office:
@@ -81,21 +80,3 @@ class People(Manager):
     @LazyProperty
     def folders(self) -> ContactFolders:
         return ContactFolders(self.office)
-
-
-class BlobStorage:
-    def __init__(self, connection: str = None) -> None:
-        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
-
-        self.config = Config()
-        self.connection = Maybe(connection).else_(self.config.data.default_connection)
-
-        self.authenticate()
-
-    def authenticate(self) -> None:
-        import azure.storage.blob as blob
-        from .blob import BlobContainerNameSpace
-
-        settings = self.config.data.connections.blob[self.connection]
-        self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
-        self.containers = BlobContainerNameSpace(self)

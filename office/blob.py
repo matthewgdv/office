@@ -1,13 +1,32 @@
 from __future__ import annotations
 
 import os
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
-from pathmagic import File, PathLike
+from maybe import Maybe
+from pathmagic import File, Dir, PathLike
 from miscutils import NameSpace
 
-if TYPE_CHECKING:
-    from .office import BlobStorage
+from office import resources
+from .config import Config
+
+
+class BlobStorage:
+    def __init__(self, connection: str = None) -> None:
+        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
+
+        self.config = Config()
+        self.connection = Maybe(connection).else_(self.config.data.default_connections.blob)
+
+        self.authenticate()
+
+    def authenticate(self) -> None:
+        import azure.storage.blob as blob
+        from .blob import BlobContainerNameSpace
+
+        settings = self.config.data.connections.blob[self.connection]
+        self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
+        self.containers = BlobContainerNameSpace(self)
 
 
 class BlobContainerNameSpace(NameSpace):
@@ -23,7 +42,7 @@ class BlobContainer:
         self._cached_len = 0
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={repr(self.name)}, num_blobs={self._cached_len or '?'})"
+        return f"{type(self).__name__}(name={repr(self.name)}, num_blobs={repr(self._cached_len or '?')})"
 
     def __str__(self) -> str:
         return self.name
@@ -65,9 +84,14 @@ class Blob:
         self.service = self.container.manager.service
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={self.name}, container={self.container.name})"
+        return f"{type(self).__name__}(name={repr(self.name)}, container={repr(self.container.name)})"
 
     def download_to(self, path: PathLike) -> PathLike:
+        file = Dir(path).new_file(self.name)
+        self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=str(file))
+        return file
+
+    def download_to_path(self, path: PathLike) -> PathLike:
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=os.fspath(path))
         return File.from_pathlike(path)
 
