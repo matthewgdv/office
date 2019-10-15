@@ -5,6 +5,8 @@ from typing import Any, Callable, NoReturn, Union
 import O365.utils.utils as utils
 from subtypes import Enum
 
+# TODO: Add all attributes from https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/api/version-2.0/complex-types-for-mail-contacts-calendar#Filter
+
 
 class BaseAttributeMeta(type):
     name: str
