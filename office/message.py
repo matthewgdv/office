@@ -126,9 +126,7 @@ class MessageQuery(Query):
         return BulkMessageAction(self)
 
     def execute(self) -> List[Message]:
-        super().execute()
-
-        messages = list(self._container.get_messages(limit=self._limit, query=self._query, order_by=self._order))
+        messages = list(self._container.get_messages(limit=self._limit, query=self._query))
         for message_ in messages:
             message_.office = self._container.office
 

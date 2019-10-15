@@ -191,11 +191,10 @@ class BulkContactFolderAction(BulkFolderAction):
 
 class FolderQuery(Query):
     def __getitem__(self, key: str) -> Folder:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def execute(self) -> List[Message]:
-        super().execute()
-        folders = list(self._container.get_folders(limit=self._limit, query=self._query, order_by=self._order))
+        folders = list(self._container.get_folders(limit=self._limit, query=self._query))
         for folder in folders:
             folder.office = self._container.office
 

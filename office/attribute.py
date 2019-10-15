@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, List, NoReturn, Optional, Tuple
+from typing import Any, Callable, NoReturn, Union
 
 import O365.utils.utils as utils
 from subtypes import Enum
@@ -8,6 +8,9 @@ from subtypes import Enum
 
 class BaseAttributeMeta(type):
     name: str
+
+    def __hash__(self) -> int:
+        return id(self)
 
     def __eq__(self, other: Any) -> BooleanExpression:  # type: ignore
         return BooleanExpression(self.name, utils.Query.equals, other)
@@ -80,7 +83,7 @@ class NonFilterableAttribute(BaseAttribute, metaclass=NonFilterableMeta):
 
 class FilterableAttribute(BaseAttribute):
     def __init__(self, order_by: str):
-        self.order_by = order_by
+        self.order_by, self.ascending = order_by, order_by == Direction.ASCENDING
 
     @classmethod
     def contains(cls, item: Any) -> BooleanExpression:
@@ -115,7 +118,23 @@ class EnumerativeAttribute(FilterableAttribute, metaclass=EnumerativeAttributeMe
     enumeration = None
 
 
-class BooleanExpression:
+class BaseExpressionElement:
+    negated: bool
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({', '.join([f'{attr}={repr(val)}' for attr, val in self.__dict__.items() if not attr.startswith('_')])})"
+
+    def __and__(self, other: Any) -> BooleanExpressionClause:
+        return BooleanExpressionClause(left=self, operator=utils.ChainOperator.AND, right=other)
+
+    def __or__(self, other: Any) -> BooleanExpressionClause:
+        return BooleanExpressionClause(left=self, operator=utils.ChainOperator.OR, right=other)
+
+    def _resolve(self) -> BaseExpressionElement:
+        return self
+
+
+class BooleanExpression(BaseExpressionElement):
     logical_opposites = {
         utils.Query.equals: utils.Query.unequal,
         utils.Query.unequal: utils.Query.equals,
@@ -126,16 +145,7 @@ class BooleanExpression:
     }
 
     def __init__(self, attribute_name: str, query_func: Callable = None, argument: Any = None) -> None:
-        self.func, self.attr, self.arg, self.negated = query_func, attribute_name, argument, False
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({', '.join([f'{attr}={repr(val)}' for attr, val in self.__dict__.items() if not attr.startswith('_')])})"
-
-    def __and__(self, other: Any) -> BooleanExpressionClause:
-        return self._resolve() & other._resolve()
-
-    def __or__(self, other: Any) -> BooleanExpressionClause:
-        return self._resolve() | other._resolve()
+        self.attr, self.func, self.arg, self.negated = attribute_name, query_func, argument, False
 
     def __invert__(self) -> BooleanExpression:
         return self.negate()
@@ -148,27 +158,10 @@ class BooleanExpression:
 
         return self
 
-    def _resolve(self) -> BooleanExpressionClause:
-        return BooleanExpressionClause(self)
 
-
-class BooleanExpressionClause:
-    def __init__(self, expression: BooleanExpression) -> None:
-        self.expressions: List[Tuple[BooleanExpression, Optional[utils.ChainOperator]]] = [(expression, None)]
-
-    def __and__(self, other: Any) -> BooleanExpressionClause:
-        return self._coalesce(other._resolve(), utils.ChainOperator.AND)
-
-    def __or__(self, other: Any) -> BooleanExpressionClause:
-        return self._coalesce(other._resolve(), utils.ChainOperator.OR)
-
-    def _coalesce(self, clause: BooleanExpressionClause, operator: utils.ChainOperator) -> BooleanExpressionClause:
-        clause.expressions[0] = (clause.expressions[0][0], operator)
-        self.expressions.extend(clause.expressions)
-        return self
-
-    def _resolve(self) -> BooleanExpressionClause:
-        return self
+class BooleanExpressionClause(BaseExpressionElement):
+    def __init__(self, left: Union[BooleanExpression, BooleanExpressionClause], operator: utils.ChainOperator, right: Union[BooleanExpression, BooleanExpressionClause]) -> None:
+        self.left, self.operator, self.right = left, operator, right
 
 
 class Direction(Enum):

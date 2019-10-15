@@ -108,8 +108,7 @@ class ContactQuery(Query):
         return BulkContactAction(self)
 
     def execute(self) -> List[Contact]:
-        super().execute()
-        result = self._container.get_contacts(limit=self._limit, query=self._query, order_by=self._order)
+        result = self._container.get_contacts(limit=self._limit, query=self._query)
 
         for contact in result:
             contact.office = self._container.office

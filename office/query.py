@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Any, Callable, Collection, Generator, Tuple
+from typing import Any, Callable, Collection, Generator, Tuple, Union
 
 import O365.utils.utils as utils
 
 from maybe import Maybe
+from miscutils import issubclass_safe
 
 from .attribute import BaseAttribute, Attribute, FilterableAttribute, BooleanExpression, BooleanExpressionClause
 
@@ -20,6 +21,9 @@ class Query:
         self._order: str = None
         self._limit: int = None
 
+    def __repr__(self) -> str:
+        return repr(self._query)
+
     def __call__(self) -> Any:
         return self.execute()
 
@@ -28,25 +32,21 @@ class Query:
         return BulkAction(self)
 
     def select(self, *args: Tuple[BaseAttribute, ...]) -> Query:
+        self._query._selects = set()
         self._select = args
+        self._build_select_clause()
         return self
 
-    def where(self, *args: Any) -> Query:
-        item, = args
-        self._where = item._resolve()
+    def where(self, resolvable_element: Union[Attribute, BooleanExpression, BooleanExpressionClause]) -> Query:
+        self._query.clear_filters()
+        self._where = resolvable_element._resolve()
+        self._build_where_clause()
         return self
 
     def order_by(self, order_clause: Any) -> Query:
-        if isinstance(order_clause, str):
-            self._order = order_clause
-        elif isinstance(order_clause, Attribute) and issubclass(order_clause, FilterableAttribute):
-            attribute = order_clause.asc()
-            self._order = f"{self._casing_function(attribute.name)} {attribute.order_by}"
-        elif isinstance(order_clause, FilterableAttribute):
-            self._order = f"{self._casing_function(order_clause.name)} {order_clause.order_by}"
-        else:
-            raise TypeError(f"Unrecognized type '{type(order_clause)}' of '{order_clause}' for 'order_by'.")
-
+        self._query.clear_order()
+        self._order = order_clause
+        self._build_order_by_clause()
         return self
 
     def limit(self, limit: int = 25) -> Query:
@@ -54,11 +54,7 @@ class Query:
         return self
 
     def execute(self) -> Any:
-        self._build_select_clause()
-        self._build_where_clause()
-
-    def get_messages(self) -> list:
-        return self.execute()
+        raise NotImplementedError
 
     def _build_select_clause(self) -> None:
         if self._select:
@@ -66,26 +62,57 @@ class Query:
 
     def _build_where_clause(self) -> None:
         if self._where is not None:
-            for expression, operator in self._where.expressions:
-                self._build_clause_chunk(expression, operator)
+            if isinstance(self._where, BooleanExpression):
+                self._build_boolean_expression(self._where)
+            elif isinstance(self._where, BooleanExpressionClause):
+                self._build_boolean_expression_clause(self._where)
+            else:
+                raise TypeError(f"Argument to filter clause of '{type(self).__name__}' must be '{type(BooleanExpression.__name__)}' or '{type(BooleanExpressionClause.__name__)}', not '{type(self._where).__name__}'.")
 
-    def _build_clause_chunk(self, expression: BooleanExpression, operator: utils.ChainOperator) -> None:
-        if operator is not None:
-            self._query = self._query.chain(operator.value)
+    def _build_order_by_clause(self) -> None:
+        if isinstance(self._order, str):
+            self._query.order_by(self._order)
+        elif isinstance(self._order, FilterableAttribute):
+            self._query.order_by(self._casing_function(self._order.name), ascending=self._order.ascending)
+        elif issubclass_safe(self._order, FilterableAttribute):
+            attribute = self._order.asc()
+            self._query.order_by(self._casing_function(attribute.name), ascending=self._order.ascending)
+        else:
+            raise TypeError(f"Unrecognized type '{type(self._order)}' of '{self._order}' for 'order_by'.")
 
-        self._query = self._query.on_attribute(self._casing_function(expression.attr))
+    def _build_boolean_expression_clause(self, clause: BooleanExpressionClause) -> None:
+        with self._precedence_grouping():
+            self._build_side(clause.left)
+            self._build_chain_operator(clause.operator)
+            self._build_side(clause.right)
 
-        with self._negation_context() if expression.negated else contextlib.nullcontext():
-            self._query = expression.func(self._query, expression.arg)
+    def _build_side(self, side: Union[BooleanExpression, BooleanExpressionClause]) -> None:
+        if isinstance(side, BooleanExpression):
+            self._build_boolean_expression(side)
+        elif isinstance(side, BooleanExpressionClause):
+            self._build_boolean_expression_clause(side)
+        else:
+            raise TypeError(f"The sides of '{type(BooleanExpressionClause).__name__}' must be '{type(BooleanExpression.__name__)}' or '{type(BooleanExpressionClause.__name__)}', not '{type(side).__name__}'.")
+
+    def _build_chain_operator(self, operator: utils.ChainOperator) -> None:
+        self._query.chain(operator.value)
+
+    def _build_boolean_expression(self, expression: BooleanExpression) -> None:
+        self._query.on_attribute(self._casing_function(expression.attr))
+        with self._negation() if expression.negated else contextlib.nullcontext():
+            expression.func(self._query, expression.arg)
 
     @contextlib.contextmanager
-    def _negation_context(self) -> Generator[None, None, None]:
-        self._query = self._query.negate()
+    def _negation(self) -> Generator[None, None, None]:
+        self._query.negate()
+        yield
+        self._query.negate()
 
-        try:
-            yield None
-        finally:
-            self.query = self._query.negate()
+    @contextlib.contextmanager
+    def _precedence_grouping(self) -> Generator[None, None, None]:
+        self._query.open_group()
+        yield
+        self._query.close_group()
 
 
 class BulkActionContext:
