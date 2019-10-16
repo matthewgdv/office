@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class Message(message.Message):
+    """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
+
     def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.office = office
@@ -33,34 +35,38 @@ class Message(message.Message):
 
     @property
     def text(self) -> str:
+        """A property controlling access to the string form of the message body, with all html tags and constructs handled and stripped out."""
         return str(Str(Markup(self.body).text).re.sub(r"<!--.*?-->", "").re.sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
 
     @property
     def markup(self) -> Markup:
+        """A property controlling access to the subtypes.Markup object corresponding to this message's html body."""
         return Markup(self.body)
 
     def reply(self, *args: Any, **kwargs: Any) -> FluentMessage:
+        """Create a new FluentMessage serving as a reply to this message."""
         message = super().reply(*args, **kwargs)
         message.office = self.office
         return FluentMessage(message=message)
 
     def forward(self, *args: Any, **kwargs: Any) -> FluentMessage:
+        """Create a new FluentMessage serving as a forward of this message."""
         message = super().forward(*args, **kwargs)
         message.office = self.office
         return FluentMessage(message=message)
 
     def copy(self, *args: Any, **kwargs: Any) -> FluentMessage:
+        """Create a new FluentMessage serving as a copy of this message."""
         message = super().copy(*args, **kwargs)
         message.office = self.office
         return FluentMessage(message=message)
 
-    def fluent(self) -> FluentMessage:
-        return FluentMessage(message=self)
-
     def render(self) -> None:
+        """Render the message body html in a separate window. Will block until the window has been closed by a user."""
         HtmlGui(name=self.subject, text=self.body)
 
     def save_attachments_to(self, path: PathLike) -> bool:
+        """Save all attachments of this message to the given folder path."""
         if not self.has_attachments:
             return []
         else:
@@ -120,20 +126,9 @@ class Message(message.Message):
             name = "to_recipients"
 
 
-class MessageQuery(Query):
-    @property
-    def bulk(self) -> BulkMessageAction:
-        return BulkMessageAction(self)
-
-    def execute(self) -> List[Message]:
-        messages = list(self._container.get_messages(limit=self._limit, query=self._query))
-        for message_ in messages:
-            message_.office = self._container.office
-
-        return messages
-
-
 class BulkMessageAction(BulkAction):
+    """A class representing a bulk action performed on the resultset of a message query."""
+
     def copy(self, folder: Any) -> BulkActionContext:
         return BulkActionContext(query=self._query, action=Message.copy, args=(folder,))
 
@@ -148,3 +143,20 @@ class BulkMessageAction(BulkAction):
 
     def save_draft(self) -> BulkActionContext:
         return BulkActionContext(query=self._query, action=Message.save_draft)
+
+
+class MessageQuery(Query):
+    """A class for querying the messages within a given collection."""
+
+    @property
+    def bulk(self) -> BulkMessageAction:
+        """Perform a bulk action on the resultset of this query."""
+        return BulkMessageAction(self)
+
+    def execute(self) -> List[Message]:
+        """Execute this query and return any messages that match."""
+        messages = list(self._container.get_messages(limit=self._limit, query=self._query))
+        for message_ in messages:
+            message_.office = self._container.office
+
+        return messages

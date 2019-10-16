@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class Contact(address_book.Contact):
+    """A class representing a Microsoft People Contact. Contains various methods for interacting with them and their details."""
+
     message_constructor = Message
 
     def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
@@ -30,6 +32,7 @@ class Contact(address_book.Contact):
 
     @property
     def message(self) -> FluentMessage:
+        """A property that will create a new FluentMessage with the send target set to be this contact."""
         message = self.new_message()
         message.office = self.office
         return FluentMessage(message=message)
@@ -82,6 +85,8 @@ class Contact(address_book.Contact):
 
 
 class ContactNameSpace(NameSpace):
+    """A namespace class containing a collection of the contacts within the global address book of the email address used to instanciate the Office object."""
+
     def __init__(self, office: Office) -> None:
         self._office = office
 
@@ -103,11 +108,15 @@ class ContactNameSpace(NameSpace):
 
 
 class ContactQuery(Query):
+    """A class for querying the contacts within a given collection."""
+
     @property
     def bulk(self) -> BulkContactAction:
+        """Perform a bulk action on the resultset of this query."""
         return BulkContactAction(self)
 
     def execute(self) -> List[Contact]:
+        """Execute this query and return any contacts that match."""
         result = self._container.get_contacts(limit=self._limit, query=self._query)
 
         for contact in result:
@@ -117,5 +126,8 @@ class ContactQuery(Query):
 
 
 class BulkContactAction(BulkAction):
+    """A class representing a bulk action performed on the resultset of a contact query."""
+
     def delete(self) -> BulkActionContext:
+        """Delete all contacts that match the query this bulk action was created from."""
         return BulkActionContext(query=self._query, action=Contact.delete)

@@ -12,6 +12,8 @@ from .attribute import BaseAttribute, Attribute, FilterableAttribute, BooleanExp
 
 
 class Query:
+    """A class for querying the api elements within a given collection."""
+
     def __init__(self, container: Any) -> None:
         self._container = container
         self._casing_function = self._container.protocol.casing_function
@@ -29,31 +31,37 @@ class Query:
 
     @property
     def bulk(self) -> BulkAction:
+        """Perform a bulk action on the resultset of this query."""
         return BulkAction(self)
 
     def select(self, *args: Tuple[BaseAttribute, ...]) -> Query:
+        """Set the attributes that will be queried. If this method is not called, all message attributes will be returned."""
         self._query._selects = set()
         self._select = args
         self._build_select_clause()
         return self
 
     def where(self, resolvable_element: Union[Attribute, BooleanExpression, BooleanExpressionClause]) -> Query:
+        """Set the filter clause on this query. Accepts a single boolean attribute, boolean expression or boolean expression clause."""
         self._query.clear_filters()
         self._where = resolvable_element._resolve()
         self._build_where_clause()
         return self
 
     def order_by(self, order_clause: Any) -> Query:
+        """Set the filter clause on this query. Accepts a single boolean attribute, boolean expression or boolean expression clause."""
         self._query.clear_order()
         self._order = order_clause
         self._build_order_by_clause()
         return self
 
     def limit(self, limit: int = 25) -> Query:
+        """Set the limit on the number of objects that may be returned."""
         self._limit = limit
         return self
 
     def execute(self) -> Any:
+        """Execute this query and return the results."""
         raise NotImplementedError
 
     def _build_select_clause(self) -> None:
@@ -116,6 +124,8 @@ class Query:
 
 
 class BulkActionContext:
+    """A class representing the context within which a bulk action is performed. It can be used as a context manager and will automatically perform the action upon dropping out of scope if the action was committed."""
+
     def __init__(self, query: Query, action: Callable, args: Any = None, kwargs: Any = None) -> None:
         self._query, self._action, self._args, self._kwargs, self._committed = query, action, Maybe(args).else_(()), Maybe(kwargs).else_({}), False
         self.result: Collection = []
@@ -126,14 +136,6 @@ class BulkActionContext:
     def __bool__(self) -> bool:
         return len(self) > 0
 
-    def commit(self) -> None:
-        self._committed = True
-
-    def execute(self) -> int:
-        self._execute_query()
-        self._perform_bulk_action()
-        return len(self)
-
     def __enter__(self) -> BulkActionContext:
         self._execute_query()
         return self
@@ -141,6 +143,16 @@ class BulkActionContext:
     def __exit__(self, ex_type: Any, ex_value: Any, ex_traceback: Any) -> None:
         if self._committed:
             self._perform_bulk_action()
+
+    def commit(self) -> None:
+        """Commit the action corresponding to this context. It will be performed when this object drops out of context.""""
+        self._committed = True
+
+    def execute(self) -> int:
+        """Perform the bulk action corresponding to this context.""""
+        self._execute_query()
+        self._perform_bulk_action()
+        return len(self)
 
     def _execute_query(self) -> None:
         self.result = self._query.execute()
@@ -151,5 +163,7 @@ class BulkActionContext:
 
 
 class BulkAction:
+    """A class representing a bulk action performed on the resultset of a query."""
+
     def __init__(self, query: Query) -> None:
         self._query = query
