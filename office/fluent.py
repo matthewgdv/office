@@ -30,6 +30,8 @@ class FluentMessage:
 
     def to(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> FluentMessage:
         """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        from .contact import Contact
+
         if isinstance(contacts, str):
             ret = contacts.main_email if isinstance(contacts, Contact) else contacts
         elif isinstance(contacts, Iterable):
