@@ -7,9 +7,6 @@ from maybe import Maybe
 from pathmagic import File, Dir, PathLike
 from miscutils import NameSpace
 
-import azure.storage.blob as blob
-from azure.storage.blob.models import ContentSettings
-
 from office import resources
 from .config import Config
 
@@ -18,6 +15,8 @@ class BlobStorage:
     """A class representing a blob storage account. Takes a connection alias which must exist in the library config settings. If none is provided, the default connection will be used."""
 
     def __init__(self, connection: str = None) -> None:
+        import azure.storage.blob as blob
+
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.blob)
         settings = self.config.data.connections.blob[self.connection]
@@ -72,6 +71,8 @@ class BlobContainer:
 
     def upload_blob_from(self, blob_name: str, path: PathLike) -> Blob:
         """Create a new blob within this container in storage from the given file path."""
+        from azure.storage.blob.models import ContentSettings
+
         file = File(path)
         content_type = self.manager.blob_type_mappings[file.extension]
         self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))

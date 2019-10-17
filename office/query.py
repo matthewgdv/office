@@ -145,11 +145,11 @@ class BulkActionContext:
             self._perform_bulk_action()
 
     def commit(self) -> None:
-        """Commit the action corresponding to this context. It will be performed when this object drops out of context.""""
+        """Commit the action corresponding to this context. It will be performed when this object drops out of context."""
         self._committed = True
 
     def execute(self) -> int:
-        """Perform the bulk action corresponding to this context.""""
+        """Perform the bulk action corresponding to this context."""
         self._execute_query()
         self._perform_bulk_action()
         return len(self)
