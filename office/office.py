@@ -3,7 +3,7 @@ from __future__ import annotations
 import webbrowser
 
 from maybe import Maybe
-from miscutils import Supressor, LazyProperty
+from miscutils import Supressor, lazy_property
 
 with Supressor():
     import O365 as off
@@ -66,7 +66,7 @@ class Outlook(ServiceHandler):
         super().__init__(office=office)
         self._signature = self.office.config.appdata.new_file("signature", "html")
 
-    @LazyProperty
+    @lazy_property
     def folders(self) -> MessageFolders:
         """A property controlling access to a namespace class representing a collection of default message folders. Custom folders can also be accessed."""
         return MessageFolders(self.office)
@@ -93,7 +93,7 @@ class People(ServiceHandler):
         super().__init__(office=office)
         self.contacts = ContactNameSpace(self.office)
 
-    @LazyProperty
+    @lazy_property
     def folders(self) -> ContactFolders:
         """A property controlling access to a namespace class representing a collection of default contact folders. Custom folders can also be accessed."""
         return ContactFolders(self.office)

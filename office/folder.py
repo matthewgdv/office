@@ -5,7 +5,7 @@ from typing import Any, List, Union, TYPE_CHECKING
 import O365.mailbox as mailbox
 import O365.address_book as address_book
 
-from miscutils import LazyProperty
+from miscutils import lazy_property
 
 from .attribute import Attribute, NonFilterableAttribute
 from .message import Message, MessageQuery
@@ -114,47 +114,47 @@ class MessageFolders(FolderCollection):
         self._mailbox = office.account.mailbox()
         self._mailbox.folder_constructor = MessageFolder
 
-    @LazyProperty
+    @lazy_property
     def main(self) -> MessageFolder:
         """A property that returns the main folder."""
         return MessageFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox', root=True, office=self.office)
 
-    @LazyProperty
+    @lazy_property
     def inbox(self) -> MessageFolder:
         """A property that returns the inbox folder."""
         folder = self._mailbox.inbox_folder()
         folder.office = self.office
         return folder
 
-    @LazyProperty
+    @lazy_property
     def outbox(self) -> MessageFolder:
         """A property that returns the outbox folder."""
         folder = self._mailbox.outbox_folder()
         folder.office = self.office
         return folder
 
-    @LazyProperty
+    @lazy_property
     def sent(self) -> MessageFolder:
         """A property that returns the sent folder."""
         folder = self._mailbox.sent_folder()
         folder.office = self.office
         return folder
 
-    @LazyProperty
+    @lazy_property
     def drafts(self) -> MessageFolder:
         """A property that returns the drafts folder."""
         folder = self._mailbox.drafts_folder()
         folder.office = self.office
         return folder
 
-    @LazyProperty
+    @lazy_property
     def junk(self) -> MessageFolder:
         """A property that returns the junk folder."""
         folder = self._mailbox.junk_folder()
         folder.office = self.office
         return folder
 
-    @LazyProperty
+    @lazy_property
     def deleted(self) -> MessageFolder:
         """A property that returns the deleted folder."""
         folder = self._mailbox.deleted_folder()
@@ -176,12 +176,12 @@ class ContactFolders(FolderCollection):
         self._book = office.account.address_book()
         self._book.contact_constructor, self._book.message_constructor = Contact, Message
 
-    @LazyProperty
+    @lazy_property
     def main(self) -> ContactFolder:
         """A property that returns the main folder."""
         return ContactFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='AddressBook', root=True, office=self.office)
 
-    @LazyProperty
+    @lazy_property
     def global_(self) -> ContactFolder:
         """A property that returns the global address list."""
         folder = self.office.account.address_book(address_book="gal")
