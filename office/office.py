@@ -15,7 +15,7 @@ if True:
     from .folder import MessageFolders, ContactFolders
 
 
-# TODO: Fix the autocompletion for outlook folders which no longer seems to work properly with the newest version of Jedi
+# TODO: Implement calendar functionality
 
 
 class Office:
