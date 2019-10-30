@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import List, Dict, Any, TYPE_CHECKING
 
 import O365.address_book as address_book
-from subtypes import Str
-from miscutils import NameSpace
+from subtypes import Str, NameSpace
 
 from .attribute import Attribute, NonFilterableAttribute
 from .message import Message

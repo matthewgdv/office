@@ -4,8 +4,8 @@ import os
 from typing import Any, Iterator
 
 from maybe import Maybe
+from subtypes import NameSpace
 from pathmagic import File, Dir, PathLike
-from miscutils import NameSpace
 
 from office import resources
 from .config import Config
