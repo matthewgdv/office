@@ -40,10 +40,10 @@ class Office:
         self.account.office = self  # TODO: refactor this to a subclass of Account
 
         try:
-            self.outlook, self.people = Outlook(self), People(self)
+            self.outlook, self.people = OutlookAccessor(self), PeopleAccessor(self)
         except RuntimeError:
             self.request_token()
-            self.outlook, self.people = Outlook(self), People(self)
+            self.outlook, self.people = OutlookAccessor(self), PeopleAccessor(self)
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(account={self.address})"
@@ -62,7 +62,7 @@ class ServiceHandler:
         self.office = office
 
 
-class Outlook(ServiceHandler):
+class OutlookAccessor(ServiceHandler):
     """A class representing Microsoft Outlook. Controls access to email-related services."""
 
     def __init__(self, office: Office) -> None:
@@ -89,7 +89,7 @@ class Outlook(ServiceHandler):
         return FluentMessage(parent=self.folders.main)
 
 
-class People:
+class PeopleAccessor:
     """A class representing Microsoft People. Controls access to contact-related services."""
 
     def __init__(self, office: Office) -> None:
@@ -106,7 +106,7 @@ class People:
         return ContactFolderAccessor(self.office)
 
 
-class Calendar(off.Schedule):
+class CalendarAccessor(off.Schedule):
     """A class representing Microsoft Calendar. Controls access to calendar-related services."""
 
     calendar_construcor = Calendar

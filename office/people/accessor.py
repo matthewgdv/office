@@ -24,14 +24,13 @@ class PeopleAccessor:
         self.contact = ContactFolderAccessor()
 
 
-class PeopleAccessor:
+class AddressBook(ContactFolder):
     contact_constructor = Contact
     message_constructor = Message
 
     def __init__(self, *args: Any, parent: Any = None, office: Office, **kwargs: Any) -> None:
         self.office = office
         super().__init__(*args, parent=self.office.account, **kwargs)
-        self.contact = ContactFolderAccessor()
 
 
 class ContactFolderAccessor:
