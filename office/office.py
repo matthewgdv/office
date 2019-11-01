@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 import webbrowser
 
 from maybe import Maybe
@@ -10,9 +11,10 @@ with Supressor():
 
 if True:
     from .config import Config
-    from .contact import ContactNameSpace
+    from .contact import ContactNameSpace, Contact
     from .fluent import FluentMessage
-    from .folder import MessageFolders, ContactFolders
+    from .folder import MessageFolderAccessor, ContactFolderAccessor
+    from .calendar import Calendar, CalendarAccessor, Event
 
 
 # TODO: Implement calendar functionality
@@ -35,6 +37,7 @@ class Office:
         settings = self.config.data.connections.office[self.connection]
         self.address = Maybe(email_address).else_(settings.default_email)
         self.account = off.Account((settings.id, settings.secret), main_resource=self.address, token_backend=self.token)
+        self.account.office = self  # TODO: refactor this to a subclass of Account
 
         try:
             self.outlook, self.people = Outlook(self), People(self)
@@ -67,9 +70,9 @@ class Outlook(ServiceHandler):
         self._signature = self.office.config.appdata.new_file("signature", "html")
 
     @lazy_property
-    def folders(self) -> MessageFolders:
+    def folders(self) -> MessageFolderAccessor:
         """A property controlling access to a namespace class representing a collection of default message folders. Custom folders can also be accessed."""
-        return MessageFolders(self.office)
+        return MessageFolderAccessor(self.office)
 
     @property
     def signature(self) -> str:
@@ -86,14 +89,34 @@ class Outlook(ServiceHandler):
         return FluentMessage(parent=self.folders.main)
 
 
-class People(ServiceHandler):
+class People:
     """A class representing Microsoft People. Controls access to contact-related services."""
 
     def __init__(self, office: Office) -> None:
-        super().__init__(office=office)
+        self.office = office
         self.contacts = ContactNameSpace(self.office)
 
     @lazy_property
-    def folders(self) -> ContactFolders:
+    def personal(self) -> AddressBook:
+        return AddressBook(parent=self.office.account, name='Personal Address Book')
+
+    @lazy_property
+    def folders(self) -> ContactFolderAccessor:
         """A property controlling access to a namespace class representing a collection of default contact folders. Custom folders can also be accessed."""
-        return ContactFolders(self.office)
+        return ContactFolderAccessor(self.office)
+
+
+class Calendar(off.Schedule):
+    """A class representing Microsoft Calendar. Controls access to calendar-related services."""
+
+    calendar_construcor = Calendar
+    event_constructor = Event
+
+    def __init__(self, *args: Any, parent: Any = None, office: Office, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = office
+
+    @lazy_property
+    def calendars(self) -> Calendar:
+        """A property controlling access to a namespace class representing a collection of default message folders. Custom folders can also be accessed."""
+        return CalendarAccessor(office=self.office, schedule=self.schedule)

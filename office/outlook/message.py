@@ -9,9 +9,9 @@ from subtypes import Str, Markup
 from pathmagic import Dir, PathLike
 from iotools import HtmlGui
 
-from .attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
-from .query import Query, BulkAction, BulkActionContext
-from .fluent import FluentMessage
+from ..attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
+from ..query import Query, BulkAction, BulkActionContext
+from ..fluent import FluentMessage
 
 if TYPE_CHECKING:
     from .office import Office

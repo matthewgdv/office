@@ -5,10 +5,10 @@ from typing import List, Dict, Any, TYPE_CHECKING
 import O365.address_book as address_book
 from subtypes import Str, NameSpace
 
-from .attribute import Attribute, NonFilterableAttribute
-from .message import Message
-from .query import Query, BulkAction, BulkActionContext
-from .fluent import FluentMessage
+from ..attribute import Attribute, NonFilterableAttribute
+from ..query import Query, BulkAction, BulkActionContext
+from ..fluent import FluentMessage
+from ..outlook.message import Message
 
 if TYPE_CHECKING:
     from .office import Office
