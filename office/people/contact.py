@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, TYPE_CHECKING
+from typing import List, Any
 
 import O365.address_book as address_book
-from subtypes import Str, NameSpace
 
 from ..attribute import Attribute, NonFilterableAttribute
 from ..query import Query, BulkAction, BulkActionContext
-from ..fluent import FluentMessage
-from ..outlook.message import Message
-
-if TYPE_CHECKING:
-    from .office import Office
+from ..outlook.message import Message, FluentMessage
 
 
 class Contact(address_book.Contact):
@@ -19,9 +14,9 @@ class Contact(address_book.Contact):
 
     message_constructor = Message
 
-    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = office
+    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = parent.office
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name={repr(self.full_name)}, email={repr(self.main_email)})"
@@ -32,9 +27,7 @@ class Contact(address_book.Contact):
     @property
     def message(self) -> FluentMessage:
         """A property that will create a new FluentMessage with the send target set to be this contact."""
-        message = self.new_message()
-        message.office = self.office
-        return FluentMessage(message=message)
+        return FluentMessage(message=self.new_message())
 
     class Attributes:
         class Name(Attribute):
@@ -81,29 +74,6 @@ class Contact(address_book.Contact):
 
         class EmailAddresses(NonFilterableAttribute):
             name = "email_addresses"
-
-
-class ContactNameSpace(NameSpace):
-    """A namespace class containing a collection of the contacts within the global address book of the email address used to instanciate the Office object."""
-
-    def __init__(self, office: Office) -> None:
-        self._office = office
-
-        book = self._office.account.address_book()
-        book.contact_constructor = Contact
-
-        contacts_by_name: Dict[str, List[Contact]] = {}
-        for contact in book.get_contacts():
-            contacts_by_name.setdefault(Str(contact.name).case.snake(), []).append(contact)
-            contacts_by_name.setdefault(Str(contact.display_name).case.snake(), []).append(contact)
-
-        mappings = {}
-        for name, contacts in contacts_by_name.items():
-            if len(contacts) == 1 and name and name.lower() != "none" and not hasattr(self, name):
-                contacts[0].office = self._office
-                mappings[name] = contacts[0]
-
-        super().__init__(mappings)
 
 
 class ContactQuery(Query):

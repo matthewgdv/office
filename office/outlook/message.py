@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List, Union, Collection, TYPE_CHECKING
 
 import O365.message as message
 import O365.utils.utils as utils
@@ -11,18 +11,19 @@ from iotools import HtmlGui
 
 from ..attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
 from ..query import Query, BulkAction, BulkActionContext
-from ..fluent import FluentMessage
+from ..fluent import FluentEntity
 
 if TYPE_CHECKING:
-    from .office import Office
+    from .folder import MessageFolder
+    from ..people import Contact
 
 
 class Message(message.Message):
     """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
 
-    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = office
+    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = parent.office
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(subject={repr(self.subject)}, from={repr(self.sender.address)}, is_read={self.is_read}, importance={repr(self.importance.value)}, attachments={len(self.attachments)}, received={self.received})"
@@ -160,3 +161,49 @@ class MessageQuery(Query):
             message_.office = self._container.office
 
         return messages
+
+
+class FluentMessage(FluentEntity):
+    """A class representing a message that doesn't yet exist. All public methods allow chaining. At the end of the method chain call FluentMessage.send() to send the message."""
+
+    def __init__(self, parent: Union[MessageFolder, Contact, Message] = None) -> None:
+        self.entity, self.office, self._signing = parent if isinstance(parent, Message) else parent.new_message(), parent.office, False
+        self.entity.sender.address = self.office.address
+        self._temp_body: str = None
+
+    def from_(self, address: str) -> FluentMessage:
+        """Set the email address this message will appear to originate from."""
+        self.entity.sender.address = address
+        return self
+
+    def to(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> FluentMessage:
+        """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.to.add(self._parse_contacts_to_emails(contacts=contacts))
+        return self
+
+    def cc(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> FluentMessage:
+        """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.cc.add(self._parse_contacts_to_emails(contacts=contacts))
+        return self
+
+    def bcc(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> FluentMessage:
+        """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.bcc.add(self._parse_contacts_to_emails(contacts=contacts))
+        return self
+
+    def request_read_receipt(self, request_read_receipt: bool) -> FluentMessage:
+        """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.is_read_receipt_requested = request_read_receipt
+        return self
+
+    def request_delivery_receipt(self, request_delivery_receipt: bool) -> FluentMessage:
+        """Set the email address(es) (a single one or a collection of them) this message will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.is_delivery_receipt_requested = request_delivery_receipt
+        return self
+
+    def send(self) -> bool:
+        """Send this message as it currently is."""
+        if self._temp_body is not None:
+            self.entity.body = f"{self._temp_body}<br><br>{self.office.outlook.signature}" if self._signing else self._temp_body
+
+        return self.entity.send()

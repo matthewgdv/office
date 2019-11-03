@@ -4,20 +4,16 @@ from typing import Any
 import webbrowser
 
 from maybe import Maybe
-from miscutils import Supressor, lazy_property
+from miscutils import Supressor
 
 with Supressor():
     import O365 as off
 
 if True:
     from .config import Config
-    from .contact import ContactNameSpace, Contact
-    from .fluent import FluentMessage
-    from .folder import MessageFolderAccessor, ContactFolderAccessor
-    from .calendar import Calendar, CalendarAccessor, Event
-
-
-# TODO: Implement calendar functionality
+    from .calendar import CalendarService
+    from .outlook import OutlookService
+    from .people import PeopleService
 
 
 class Office:
@@ -30,20 +26,23 @@ class Office:
     ]
 
     def __init__(self, email_address: str = None, connection: str = None) -> None:
+        self.outlook: OutlookService = None
+        self.people: PeopleService = None
+        self.calendar: CalendarService = None
+
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
         self.token = off.FileSystemTokenBackend(token_path=str(self.config.appdata), token_filename="o365_token.txt")
 
         settings = self.config.data.connections.office[self.connection]
         self.address = Maybe(email_address).else_(settings.default_email)
-        self.account = off.Account((settings.id, settings.secret), main_resource=self.address, token_backend=self.token)
-        self.account.office = self  # TODO: refactor this to a subclass of Account
+        self.account = Account((settings.id, settings.secret), main_resource=self.address, token_backend=self.token, office=self)
 
         try:
-            self.outlook, self.people = OutlookAccessor(self), PeopleAccessor(self)
+            self._establish_services()
         except RuntimeError:
             self.request_token()
-            self.outlook, self.people = OutlookAccessor(self), PeopleAccessor(self)
+            self._establish_services()
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(account={self.address})"
@@ -54,69 +53,11 @@ class Office:
         webbrowser.open(auth_url)
         self.account.connection.request_token(input("Please follow the link that will open momentarily and grant permission. Then enter the url of the inbox page you land on.\n\n"))
 
+    def _establish_services(self) -> None:
+        self.outlook, self.people, self.calendar = OutlookService(office=self), PeopleService(office=self), CalendarService(office=self)
 
-class ServiceHandler:
-    """Abstract base class for classes representing Office365 services to inherit from."""
 
-    def __init__(self, office: Office) -> None:
+class Account(off.Account):
+    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.office = office
-
-
-class OutlookAccessor(ServiceHandler):
-    """A class representing Microsoft Outlook. Controls access to email-related services."""
-
-    def __init__(self, office: Office) -> None:
-        super().__init__(office=office)
-        self._signature = self.office.config.appdata.new_file("signature", "html")
-
-    @lazy_property
-    def folders(self) -> MessageFolderAccessor:
-        """A property controlling access to a namespace class representing a collection of default message folders. Custom folders can also be accessed."""
-        return MessageFolderAccessor(self.office)
-
-    @property
-    def signature(self) -> str:
-        """A property controlling access to the user's signature. Changes to it will be persisted to the filesystem across sessions."""
-        return self._signature.contents
-
-    @signature.setter
-    def signature(self, signature: str) -> None:
-        self._signature.contents = signature
-
-    @property
-    def message(self) -> FluentMessage:
-        """A property that will create a new fluent message."""
-        return FluentMessage(parent=self.folders.main)
-
-
-class PeopleAccessor:
-    """A class representing Microsoft People. Controls access to contact-related services."""
-
-    def __init__(self, office: Office) -> None:
-        self.office = office
-        self.contacts = ContactNameSpace(self.office)
-
-    @lazy_property
-    def personal(self) -> AddressBook:
-        return AddressBook(parent=self.office.account, name='Personal Address Book')
-
-    @lazy_property
-    def folders(self) -> ContactFolderAccessor:
-        """A property controlling access to a namespace class representing a collection of default contact folders. Custom folders can also be accessed."""
-        return ContactFolderAccessor(self.office)
-
-
-class CalendarAccessor(off.Schedule):
-    """A class representing Microsoft Calendar. Controls access to calendar-related services."""
-
-    calendar_construcor = Calendar
-    event_constructor = Event
-
-    def __init__(self, *args: Any, parent: Any = None, office: Office, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = office
-
-    @lazy_property
-    def calendars(self) -> Calendar:
-        """A property controlling access to a namespace class representing a collection of default message folders. Custom folders can also be accessed."""
-        return CalendarAccessor(office=self.office, schedule=self.schedule)

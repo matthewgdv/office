@@ -1,21 +1,24 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+import datetime as dt
+from typing import Any, Union, Collection, TYPE_CHECKING
 
 import O365.calendar as calendar
 
 from ..query import Query, BulkAction, BulkActionContext
+from ..fluent import FluentEntity
 
 if TYPE_CHECKING:
-    from ..office import Office
+    from .calendar import Calendar
+    from ..people import Contact
 
 
 class Event(calendar.Event):
     """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
 
-    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = office
+    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = parent.office
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({', '.join([f'{attr}={repr(val)}' for attr, val in self.__dict__.items() if not attr.startswith('_')])})"
@@ -39,3 +42,62 @@ class EventQuery(Query):
     def bulk(self) -> BulkEventAction:
         """Perform a bulk action on the resultset of this query."""
         return BulkEventAction(self)
+
+
+class FluentEvent(FluentEntity):
+    """A class representing an event that doesn't yet exist. All public methods allow chaining. At the end of the method chain call FluentEvent.create() to create the event."""
+
+    def __init__(self, parent: Union[Calendar, Event] = None) -> None:
+        self.entity, self.office = parent if isinstance(parent, Event) else parent.new_event(), parent.office
+        self._temp_body: str = None
+
+    def from_(self, address: str) -> FluentEvent:
+        """Set the email address this event will appear to originate from."""
+        self.entity.organizer = address
+        return self
+
+    def to(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> FluentEvent:
+        """Set the email address(es) (a single one or a collection of them) this event will be sent to. Email addresses can be provided either as strings or as contact objects."""
+        self.entity.attendees.add(self._parse_contacts_to_emails(contacts=contacts))
+        return self
+
+    def start(self, start_time: dt.datetime = None) -> FluentEvent:
+        """Set the time at which the event will start."""
+        self._start = start_time
+        return self
+
+    def end(self, end_time: dt.datetime = None) -> FluentEvent:
+        """Set the time at which the event will end."""
+        self._end = end_time
+        return self
+
+    def all_day(self, is_all_day: bool = True) -> FluentEvent:
+        self.entity.is_all_day = is_all_day
+        return self
+
+    def location(self, location: str) -> FluentEvent:
+        self.entity.location = location
+        return self
+
+    def remind_before_minutes(self, remind_before_minutes: int) -> FluentEvent:
+        self.entity.remind_before_minutes = remind_before_minutes
+        return self
+
+    def response_requested(self, response_requested: bool) -> FluentEvent:
+        self.entity.response_requested = response_requested
+        return self
+
+    def show_as(self, show_as: str) -> FluentEvent:
+        self.entity.show_as = show_as
+        return self
+
+    def sensitivity(self, sensitivity: str) -> FluentEvent:
+        self.entity.sensitivity = sensitivity
+        return self
+
+    def create(self) -> bool:
+        """Create this event as it currently is."""
+        if self._temp_body is not None:
+            self.entity.body = f"{self._temp_body}<br><br>{self.office.outlook.signature}" if self._signing else self._temp_body
+
+        return self.entity.save()

@@ -1,8 +1,8 @@
-__all__ = ["Office", "BlobStorage", "MessageFolder", "ContactFolder", "Message", "Contact", "Config"]
+__all__ = ["Office", "CalendarService", "Calendar", "Event", "OutlookService", "MessageFolder", "Message", "PeopleService", "ContactFolder", "Contact", "Config", "BlobStorage"]
 
 from .office import Office
-from .folder import MessageFolder, ContactFolder
-from .message import Message
-from .contact import Contact
+from .calendar import CalendarService, Calendar, Event
+from .outlook import OutlookService, MessageFolder, Message
+from .people import PeopleService, ContactFolder, Contact
 from .config import Config
 from .blob import BlobStorage

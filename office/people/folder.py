@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List
 
 import O365.address_book as address_book
 
-from miscutils import lazy_property
-
+from .contact import Contact, ContactQuery
 from ..attribute import Attribute, NonFilterableAttribute
-from ..contact import Contact, ContactQuery
 from ..query import Query, BulkAction, BulkActionContext
-from ..outlook.message import Message
-
-if TYPE_CHECKING:
-    from .office import Office
+from ..outlook import Message
 
 
 class ContactFolder(address_book.ContactFolder):
@@ -20,9 +15,9 @@ class ContactFolder(address_book.ContactFolder):
 
     message_constructor, contact_constructor = Message, Contact
 
-    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = office
+    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = parent.office
 
     @property
     def folders(self) -> ContactFolderQuery:

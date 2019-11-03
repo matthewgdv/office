@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, List, Union, TYPE_CHECKING
+from typing import Any, List
 
 import O365.mailbox as mailbox
-
-from miscutils import lazy_property
 
 from .message import Message, MessageQuery
 from ..attribute import Attribute, NonFilterableAttribute
 from ..query import Query, BulkAction, BulkActionContext
-
-if TYPE_CHECKING:
-    from .office import Office
 
 
 class MessageFolder(mailbox.Folder):
@@ -19,9 +14,9 @@ class MessageFolder(mailbox.Folder):
 
     message_constructor = Message
 
-    def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = office
+    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
+        super().__init__(*args, parent=parent, **kwargs)
+        self.office = parent.office
 
     @property
     def folders(self) -> MessageFolderQuery:
@@ -56,71 +51,6 @@ class MessageFolder(mailbox.Folder):
 
         class Messages(NonFilterableAttribute):
             name = "messages"
-
-
-class MessageFolderAccessor:
-    """A class representing the collection of the default Outlook message folders. Custom folders can be accessed via the the MessageFolders.custom() method."""
-
-    def __init__(self, office: Office) -> None:
-        self.office = office
-        self._mailbox = office.account.mailbox()
-        self._mailbox.folder_constructor = MessageFolder
-
-    def __getitem__(self, key: Union[str, int]) -> MessageFolder:
-        return self.custom(folder_name=key) if isinstance(key, str) else (self.custom(folder_id=key) if isinstance(key, int) else None)
-
-    @lazy_property
-    def main(self) -> MessageFolder:
-        """A property that returns the main folder."""
-        return MessageFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox', root=True, office=self.office)
-
-    @lazy_property
-    def inbox(self) -> MessageFolder:
-        """A property that returns the inbox folder."""
-        folder = self._mailbox.inbox_folder()
-        folder.office = self.office
-        return folder
-
-    @lazy_property
-    def outbox(self) -> MessageFolder:
-        """A property that returns the outbox folder."""
-        folder = self._mailbox.outbox_folder()
-        folder.office = self.office
-        return folder
-
-    @lazy_property
-    def sent(self) -> MessageFolder:
-        """A property that returns the sent folder."""
-        folder = self._mailbox.sent_folder()
-        folder.office = self.office
-        return folder
-
-    @lazy_property
-    def drafts(self) -> MessageFolder:
-        """A property that returns the drafts folder."""
-        folder = self._mailbox.drafts_folder()
-        folder.office = self.office
-        return folder
-
-    @lazy_property
-    def junk(self) -> MessageFolder:
-        """A property that returns the junk folder."""
-        folder = self._mailbox.junk_folder()
-        folder.office = self.office
-        return folder
-
-    @lazy_property
-    def deleted(self) -> MessageFolder:
-        """A property that returns the deleted folder."""
-        folder = self._mailbox.deleted_folder()
-        folder.office = self.office
-        return folder
-
-    def custom(self, folder_name: str = None, folder_id: int = None) -> MessageFolder:
-        """Return the given custom folder by name or id."""
-        folder = self._mailbox.get_folder(folder_name=folder_name, folder_id=folder_id)
-        folder.office = self.office
-        return folder
 
 
 class BulkMessageFolderAction(BulkAction):
