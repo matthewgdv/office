@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any, Union, Collection, TYPE_CHECKING
+from typing import Union, Collection, TYPE_CHECKING
 
 import O365.calendar as calendar
 
@@ -9,22 +9,21 @@ from ..query import Query, BulkAction, BulkActionContext
 from ..fluent import FluentEntity
 
 if TYPE_CHECKING:
-    from .calendar import Calendar
     from ..people import Contact
 
 
 class Event(calendar.Event):
     """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
 
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office
-
     def __repr__(self) -> str:
         return f"{type(self).__name__}({', '.join([f'{attr}={repr(val)}' for attr, val in self.__dict__.items() if not attr.startswith('_')])})"
 
     def __str__(self) -> str:
         return self.text
+
+    @property
+    def fluent(self) -> FluentEvent:
+        return FluentEvent(parent=self)
 
 
 class BulkEventAction(BulkAction):
@@ -47,8 +46,8 @@ class EventQuery(Query):
 class FluentEvent(FluentEntity):
     """A class representing an event that doesn't yet exist. All public methods allow chaining. At the end of the method chain call FluentEvent.create() to create the event."""
 
-    def __init__(self, parent: Union[Calendar, Event] = None) -> None:
-        self.entity, self.office = parent if isinstance(parent, Event) else parent.new_event(), parent.office
+    def __init__(self, parent: Event = None) -> None:
+        self.entity, self.office = parent, parent.con.office
         self._temp_body: str = None
 
     def from_(self, address: str) -> FluentEvent:

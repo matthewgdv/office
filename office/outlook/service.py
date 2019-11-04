@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 
 import O365 as off
 
@@ -80,7 +80,3 @@ class OutlookService:
 
 class Mailbox(off.mailbox.MailBox):
     folder_constructor = MessageFolder
-
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office

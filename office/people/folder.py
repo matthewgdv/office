@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import List
 
 import O365.address_book as address_book
 
@@ -15,10 +15,6 @@ class ContactFolder(address_book.ContactFolder):
 
     message_constructor, contact_constructor = Message, Contact
 
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office
-
     @property
     def folders(self) -> ContactFolderQuery:
         """A property that will create a new query against the folders contained within this folder."""
@@ -31,12 +27,7 @@ class ContactFolder(address_book.ContactFolder):
 
     def from_address(self, address: str) -> Contact:
         """Return the contact with the given address if one exists. Otherwise return None."""
-        contact = self.get_contact_by_email(address)
-        if contact is None:
-            return None
-        else:
-            contact.office = self.office
-            return contact
+        return self.get_contact_by_email(address)
 
     class Attributes:
         class Name(Attribute):
@@ -69,11 +60,7 @@ class ContactFolderQuery(Query):
 
     def execute(self) -> List[Contact]:
         """Execute this query and return any folders that match."""
-        folders = list(self._container.get_folders(limit=self._limit, query=self._query))
-        for folder in folders:
-            folder.office = self._container.office
-
-        return folders
+        return list(self._container.get_folders(limit=self._limit, query=self._query))
 
     @property
     def bulk(self) -> BulkContactFolderAction:

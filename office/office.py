@@ -60,4 +60,4 @@ class Office:
 class Account(off.Account):
     def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.office = office
+        self.con.office = office

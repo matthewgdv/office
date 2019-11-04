@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Any
+from typing import List
 
 import O365.address_book as address_book
 
@@ -13,10 +13,6 @@ class Contact(address_book.Contact):
     """A class representing a Microsoft People Contact. Contains various methods for interacting with them and their details."""
 
     message_constructor = Message
-
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name={repr(self.full_name)}, email={repr(self.main_email)})"
@@ -86,12 +82,7 @@ class ContactQuery(Query):
 
     def execute(self) -> List[Contact]:
         """Execute this query and return any contacts that match."""
-        result = self._container.get_contacts(limit=self._limit, query=self._query)
-
-        for contact in result:
-            contact.office = self._container.office
-
-        return result
+        return self._container.get_contacts(limit=self._limit, query=self._query)
 
 
 class BulkContactAction(BulkAction):

@@ -14,16 +14,11 @@ from ..query import Query, BulkAction, BulkActionContext
 from ..fluent import FluentEntity
 
 if TYPE_CHECKING:
-    from .folder import MessageFolder
     from ..people import Contact
 
 
 class Message(message.Message):
     """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
-
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(subject={repr(self.subject)}, from={repr(self.sender.address)}, is_read={self.is_read}, importance={repr(self.importance.value)}, attachments={len(self.attachments)}, received={self.received})"
@@ -44,27 +39,26 @@ class Message(message.Message):
         """A property controlling access to the subtypes.Markup object corresponding to this message's html body."""
         return Markup(self.body)
 
+    @property
+    def fluent(self) -> FluentMessage:
+        """A property controlling access to the subtypes.Markup object corresponding to this message's html body."""
+        return FluentMessage(parent=self)
+
     def reply(self, *args: Any, **kwargs: Any) -> FluentMessage:
         """Create a new FluentMessage serving as a reply to this message."""
-        message = super().reply(*args, **kwargs)
-        message.office = self.office
-        return FluentMessage(message=message)
+        return super().reply(*args, **kwargs).fluent
 
     def forward(self, *args: Any, **kwargs: Any) -> FluentMessage:
         """Create a new FluentMessage serving as a forward of this message."""
-        message = super().forward(*args, **kwargs)
-        message.office = self.office
-        return FluentMessage(message=message)
+        return super().forward(*args, **kwargs).fluent
 
     def copy(self, *args: Any, **kwargs: Any) -> FluentMessage:
         """Create a new FluentMessage serving as a copy of this message."""
-        message = super().copy(*args, **kwargs)
-        message.office = self.office
-        return FluentMessage(message=message)
+        return super().copy(*args, **kwargs).fluent
 
     def render(self) -> None:
         """Render the message body html in a separate window. Will block until the window has been closed by a user."""
-        HtmlGui(name=self.subject, text=self.body)
+        HtmlGui(name=self.subject, text=self.body).start_loop()
 
     def save_attachments_to(self, path: PathLike) -> bool:
         """Save all attachments of this message to the given folder path."""
@@ -156,18 +150,14 @@ class MessageQuery(Query):
 
     def execute(self) -> List[Message]:
         """Execute this query and return any messages that match."""
-        messages = list(self._container.get_messages(limit=self._limit, query=self._query))
-        for message_ in messages:
-            message_.office = self._container.office
-
-        return messages
+        return list(self._container.get_messages(limit=self._limit, query=self._query))
 
 
 class FluentMessage(FluentEntity):
     """A class representing a message that doesn't yet exist. All public methods allow chaining. At the end of the method chain call FluentMessage.send() to send the message."""
 
-    def __init__(self, parent: Union[MessageFolder, Contact, Message] = None) -> None:
-        self.entity, self.office, self._signing = parent if isinstance(parent, Message) else parent.new_message(), parent.office, False
+    def __init__(self, parent: Message = None) -> None:
+        self.entity, self.office, self._signing = parent, parent.con.office, False
         self.entity.sender.address = self.office.address
         self._temp_body: str = None
 

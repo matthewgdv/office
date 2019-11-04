@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class PeopleService:
     """A class representing Microsoft People. Controls access to contact-related services."""
 
-    def __init__(self, *args: Any, parent: Any = None, office: Office, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, office: Office, **kwargs: Any) -> None:
         self.office = office
 
         if is_running_in_ipython():
@@ -41,10 +41,6 @@ class PeopleService:
 class GlobalAddressList(address_book.GlobalAddressList):
     contact_constructor = Contact
     message_constructor = Message
-
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.office = parent.office
 
 
 class ContactNameSpace(NameSpace):

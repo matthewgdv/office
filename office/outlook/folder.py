@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import List
 
 import O365.mailbox as mailbox
 
@@ -13,10 +13,6 @@ class MessageFolder(mailbox.Folder):
     """A class representing a Microsoft Outlook message folder. Can initiate queries on any messages or folders it contains."""
 
     message_constructor = Message
-
-    def __init__(self, *args: Any, parent: Any = None, **kwargs: Any) -> None:
-        super().__init__(*args, parent=parent, **kwargs)
-        self.office = parent.office
 
     @property
     def folders(self) -> MessageFolderQuery:
@@ -73,17 +69,11 @@ class MessageFolderQuery(Query):
     """A class for querying the message folders within a given collection."""
 
     def __getitem__(self, key: str) -> MessageFolder:
-        folder = self._container.get_folder(folder_name=key)
-        folder.office = self._container.office
-        return folder
+        return self._container.get_folder(folder_name=key)
 
     def execute(self) -> List[Message]:
         """Execute this query and return any folders that match."""
-        folders = list(self._container.get_folders(limit=self._limit, query=self._query))
-        for folder in folders:
-            folder.office = self._container.office
-
-        return folders
+        return list(self._container.get_folders(limit=self._limit, query=self._query))
 
     @property
     def bulk(self) -> BulkMessageFolderAction:
