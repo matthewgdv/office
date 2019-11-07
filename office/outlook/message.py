@@ -58,7 +58,7 @@ class Message(message.Message):
 
     def render(self) -> None:
         """Render the message body html in a separate window. Will block until the window has been closed by a user."""
-        HtmlGui(name=self.subject, text=self.body).start_loop()
+        HtmlGui(name=self.subject, text=self.body).start()
 
     def save_attachments_to(self, path: PathLike) -> bool:
         """Save all attachments of this message to the given folder path."""
