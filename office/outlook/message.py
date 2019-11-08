@@ -20,6 +20,12 @@ if TYPE_CHECKING:
 class Message(message.Message):
     """A class representing a Microsoft Outlook message. Provides methods and properties for interacting with it."""
 
+    style = {
+        "font-size": 11,
+        "font-family": "Calibri, sans-serif, serif, &quot;EmojiFont&quot;",
+        "margin": 0
+    }
+
     def __repr__(self) -> str:
         return f"{type(self).__name__}(subject={repr(self.subject)}, from={repr(self.sender.address)}, is_read={self.is_read}, importance={repr(self.importance.value)}, attachments={len(self.attachments)}, received={self.received})"
 
@@ -194,6 +200,8 @@ class FluentMessage(FluentEntity):
     def send(self) -> bool:
         """Send this message as it currently is."""
         if self._temp_body is not None:
-            self.entity.body = f"{self._temp_body}<br><br>{self.office.outlook.signature}" if self._signing else self._temp_body
+            start, end = f"""<p style="font-size: {self.entity.style["font-size"]}pt; font-family: {self.entity.style["font-family"]}; margin: {self.entity.style["margin"]}px;">""", "</p>"
+            body = f"{start}{self._temp_body}{end}"
+            self.entity.body = f"{body}<br>{self.office.outlook.signature}" if self._signing else body
 
         return self.entity.send()

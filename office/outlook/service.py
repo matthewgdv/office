@@ -27,7 +27,7 @@ class OutlookService:
     @property
     def message(self) -> FluentMessage:
         """A property that will create a new fluent message."""
-        return FluentMessage(parent=self.main)
+        return FluentMessage(parent=self.main.new_message())
 
     @property
     def signature(self) -> str:
