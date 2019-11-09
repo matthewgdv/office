@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, List, Dict, TYPE_CHECKING
 
 from O365 import address_book
+from O365 import directory
 
 from subtypes import Str, NameSpace
 from miscutils import lazy_property, is_running_in_ipython
@@ -33,14 +34,9 @@ class PeopleService:
         return ContactFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name="Personal Address Book", root=True)
 
     @lazy_property
-    def global_(self) -> ContactFolder:
+    def active_directory(self) -> ContactFolder:
         """A property that returns the global address list."""
-        return GlobalAddressList(parent=self.office.account)
-
-
-class GlobalAddressList(address_book.GlobalAddressList):
-    contact_constructor = Contact
-    message_constructor = Message
+        return directory.Directory(parent=self.office.account)
 
 
 class ContactNameSpace(NameSpace):

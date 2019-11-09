@@ -32,7 +32,7 @@ class Office:
 
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
-        self.token = off.FileSystemTokenBackend(token_path=str(self.config.appdata), token_filename="o365_token.txt")
+        self.token = off.FileSystemTokenBackend(token_path=str(self.config.appdata.new_dir("tokens")), token_filename=f"{self.connection}.txt")
 
         settings = self.config.data.connections.office[self.connection]
         self.address = Maybe(email_address).else_(settings.default_email)
@@ -49,7 +49,7 @@ class Office:
 
     def request_token(self) -> None:
         """ """
-        auth_url = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
+        auth_url, state = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
         webbrowser.open(auth_url)
         self.account.connection.request_token(input("Please follow the link that will open momentarily and grant permission. Then enter the url of the inbox page you land on.\n\n"))
 
