@@ -23,7 +23,7 @@ class Contact(address_book.Contact):
     @property
     def message(self) -> FluentMessage:
         """A property that will create a new FluentMessage with the send target set to be this contact."""
-        return FluentMessage(message=self.new_message())
+        return FluentMessage(parent=self.new_message())
 
     class Attributes:
         class Name(Attribute):
