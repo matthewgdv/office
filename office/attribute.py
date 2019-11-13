@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Any, Callable, NoReturn, Union
 
 import O365.utils.utils as utils
-from subtypes import Enum
+from subtypes import ValueEnum
 
 # TODO: Add all attributes from https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/api/version-2.0/complex-types-for-mail-contacts-calendar#Filter
 
 
-class Direction(Enum):
+class Direction(ValueEnum):
     """An Enum of the directions an 'order_by' clause can go in."""
 
     ASCENDING, DESCENDING = "asc", "desc"
