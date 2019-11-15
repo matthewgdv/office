@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, List, Dict, TYPE_CHECKING
 
-from O365 import address_book
 from O365 import directory
 
 from subtypes import Str, NameSpace
@@ -10,7 +9,6 @@ from miscutils import lazy_property, is_running_in_ipython
 
 from .contact import Contact
 from .folder import ContactFolder
-from ..outlook import Message
 
 if TYPE_CHECKING:
     from ..office import Office
