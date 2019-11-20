@@ -1,3 +1,9 @@
+PLEASE NOTE:
+====================
+
+This library is currently still under development. The API will likely undergo significant changes that may break any code you write with it.
+The documentation will fall out of sync with the updates regularly until development slows down. Use it at your own risk.
+
 Overview
 ====================
 
