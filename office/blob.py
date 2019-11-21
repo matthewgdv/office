@@ -23,7 +23,7 @@ class BlobStorage:
 
         self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
         self.containers = BlobContainerNameSpace(self)
-        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").contents
+        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").content
 
 
 class BlobContainerNameSpace(NameSpace):

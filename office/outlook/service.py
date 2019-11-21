@@ -32,11 +32,11 @@ class OutlookService:
     @property
     def signature(self) -> str:
         """A property controlling access to the user's signature. Changes to it will be persisted to the filesystem across sessions."""
-        return self._signature.contents
+        return self._signature.content
 
     @signature.setter
     def signature(self, signature: str) -> None:
-        self._signature.contents = signature
+        self._signature.content = signature
 
     @lazy_property
     def main(self) -> MessageFolder:
