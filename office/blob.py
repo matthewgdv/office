@@ -49,7 +49,7 @@ class BlobContainer:
         return self.name
 
     def __len__(self) -> int:
-        self._cached_len = sum([1 for blob in self.service.list_blob_names(self.name)])
+        self._cached_len = sum([1 for blob in self.service.list_blobs(self.name)])
         return self._cached_len
 
     def __bool__(self) -> bool:
