@@ -4,7 +4,7 @@ import os
 from typing import Any, Iterator
 
 from maybe import Maybe
-from subtypes import NameSpace
+from subtypes import NameSpace, Str
 from pathmagic import File, Dir, PathLike
 
 from office import resources
@@ -92,7 +92,7 @@ class Blob:
 
     def download_to(self, path: PathLike) -> File:
         """Download this blob to the given folder. It will keep its blob 'basename' as its new name."""
-        file = Dir(path).new_file(self.name)
+        file = Dir(path).new_file(Str(self.name).slice.after_last("/"))
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=str(file))
         return file
 
