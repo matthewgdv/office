@@ -40,7 +40,7 @@ class Office:
 
         try:
             self._establish_services()
-        except RuntimeError:
+        except Exception:
             self.request_token()
             self._establish_services()
 
