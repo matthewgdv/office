@@ -61,23 +61,23 @@ class BlobContainer:
     def __getitem__(self, key: str) -> Blob:
         return Blob(blob=self.service.get_blob_properties(container_name=self.name, blob_name=key), container=self)
 
-    def download_blob_to(self, blob_name: str, path: PathLike) -> PathLike:
+    def download_blob_to(self, name: str, folder: PathLike) -> PathLike:
         """Download the named blob to the given folder. It will keep its blob 'basename' as its new name."""
-        return self[blob_name].download_to(path)
+        return self[name].download_to(folder)
 
-    def download_blob_to_path(self, blob_name: str, path: PathLike) -> PathLike:
+    def download_blob_to_path(self, name: str, path: PathLike) -> PathLike:
         """Download the named blob to the given path."""
-        return self[blob_name].download_to_path(path)
+        return self[name].download_to_path(path)
 
-    def upload_blob_from(self, blob_name: str, path: PathLike) -> Blob:
+    def upload_blob_from(self, file: PathLike, name: str = None) -> Blob:
         """Create a new blob within this container in storage from the given file path."""
         from azure.storage.blob.models import ContentSettings
 
-        file = File(path)
+        file = File.from_pathlike(file)
         content_type = self.manager.blob_type_mappings[file.extension]
-        self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
+        self.service.create_blob_from_path(container_name=self.name, blob_name=file.stem if name is None else name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
 
-        return self[blob_name]
+        return self[name]
 
 
 class Blob:
@@ -90,9 +90,9 @@ class Blob:
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name={repr(self.name)}, container={repr(self.container.name)})"
 
-    def download_to(self, path: PathLike) -> File:
+    def download_to(self, folder: PathLike, name: str = None) -> File:
         """Download this blob to the given folder. It will keep its blob 'basename' as its new name."""
-        file = Dir(path).new_file(Str(self.name).slice.after_last("/"))
+        file = Dir(folder).new_file(Str(self.name).slice.after_last("/") if name is None else name)
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=str(file))
         return file
 
