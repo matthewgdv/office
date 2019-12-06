@@ -19,7 +19,7 @@ class OutlookService:
     def __init__(self, office: Office) -> None:
         self.office = office
         self.mailbox = Mailbox(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox')
-        self._signature = self.office.config.appdata.new_file("signature", "html")
+        self._signature = self.office.config.folder.new_file("signature", "html")
 
     def __getitem__(self, key: Union[str, int]) -> MessageFolder:
         return self.custom(folder_name=key) if isinstance(key, str) else (self.custom(folder_id=key) if isinstance(key, int) else None)

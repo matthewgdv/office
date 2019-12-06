@@ -32,7 +32,7 @@ class Office:
 
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
-        self.token = off.FileSystemTokenBackend(token_path=str(self.config.appdata.new_dir("tokens")), token_filename=f"{self.connection}.txt")
+        self.token = off.FileSystemTokenBackend(token_path=str(self.config.folder.new_dir("tokens")), token_filename=f"{self.connection}.txt")
 
         settings = self.config.data.connections.office[self.connection]
         self.address = Maybe(email_address).else_(settings.default_email)
