@@ -75,9 +75,10 @@ class BlobContainer:
 
         file = File.from_pathlike(file)
         content_type = self.manager.blob_type_mappings[file.extension]
-        self.service.create_blob_from_path(container_name=self.name, blob_name=file.stem if name is None else name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
+        blob_name = file.name if name is None else name
+        self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
 
-        return self[name]
+        return self[blob_name]
 
 
 class Blob:
@@ -92,7 +93,7 @@ class Blob:
 
     def download_to(self, folder: PathLike, name: str = None) -> File:
         """Download this blob to the given folder. It will keep its blob 'basename' as its new name."""
-        file = Dir(folder).new_file(Str(self.name).slice.after_last("/") if name is None else name)
+        file = Dir.from_pathlike(folder).new_file(Str(self.name).slice.after_last("/") or self.name if name is None else name)
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=str(file))
         return file
 
