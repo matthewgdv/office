@@ -7,7 +7,7 @@ import office
 class Config(iotools.Config):
     """A config class granting access to an os-specific appdata directory for use by this library."""
 
-    app_name = office.__name__
+    name = office.__name__
     default = {"default_connections": {"office": "", "blob": ""}, "connections": {"office": {}, "blob": {}}}
 
     def add_office_connection(self, connection: str, id: str, secret: str, default_email: str, is_default: bool = False) -> None:
