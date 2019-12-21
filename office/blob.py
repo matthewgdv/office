@@ -7,7 +7,7 @@ from maybe import Maybe
 from subtypes import NameSpace, Str
 from pathmagic import File, Dir, PathLike
 
-from office import resources
+from office.resources import blob_content_types
 from .config import Config
 
 
@@ -23,7 +23,7 @@ class BlobStorage:
 
         self.blob, self.service = blob, blob.BlockBlobService(account_name=settings.account, account_key=settings.key)
         self.containers = BlobContainerNameSpace(self)
-        self.blob_type_mappings = File.from_resource(package=resources, name="blob_content_types", extension="json").content
+        self.blob_type_mappings = blob_content_types.content_types
 
 
 class BlobContainerNameSpace(NameSpace):

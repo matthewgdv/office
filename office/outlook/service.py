@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-import O365 as off
+from O365.mailbox import MailBox
 
-from miscutils import lazy_property
+from miscutils import cached_property
 
 from .folder import MessageFolder
 from .message import FluentMessage
@@ -21,8 +21,8 @@ class OutlookService:
         self.mailbox = Mailbox(parent=self.office.account, main_resource=self.office.account.main_resource, name='MailBox')
         self._signature = self.office.config.folder.new_file("signature", "html")
 
-    def __getitem__(self, key: Union[str, int]) -> MessageFolder:
-        return self.custom(folder_name=key) if isinstance(key, str) else (self.custom(folder_id=key) if isinstance(key, int) else None)
+    def __getitem__(self, key: str) -> MessageFolder:
+        return self.custom(folder_name=key)
 
     @property
     def message(self) -> FluentMessage:
@@ -38,45 +38,45 @@ class OutlookService:
     def signature(self, signature: str) -> None:
         self._signature.content = signature
 
-    @lazy_property
+    @cached_property
     def main(self) -> MessageFolder:
         """A property that returns the main folder."""
         return MessageFolder(parent=self.office.account, main_resource=self.office.account.main_resource, root=True, name='Main')
 
-    @lazy_property
+    @cached_property
     def inbox(self) -> MessageFolder:
         """A property that returns the inbox folder."""
         return self.mailbox.inbox_folder()
 
-    @lazy_property
+    @cached_property
     def outbox(self) -> MessageFolder:
         """A property that returns the outbox folder."""
         return self.mailbox.outbox_folder()
 
-    @lazy_property
+    @cached_property
     def sent(self) -> MessageFolder:
         """A property that returns the sent folder."""
         return self.mailbox.sent_folder()
 
-    @lazy_property
+    @cached_property
     def drafts(self) -> MessageFolder:
         """A property that returns the drafts folder."""
         return self.mailbox.drafts_folder()
 
-    @lazy_property
+    @cached_property
     def junk(self) -> MessageFolder:
         """A property that returns the junk folder."""
         return self.mailbox.junk_folder()
 
-    @lazy_property
+    @cached_property
     def deleted(self) -> MessageFolder:
         """A property that returns the deleted folder."""
         return self.mailbox.deleted_folder()
 
-    def custom(self, folder_name: str = None, folder_id: int = None) -> MessageFolder:
+    def custom(self, folder_name: str = None, folder_id: str = None) -> MessageFolder:
         """Return the given custom folder by name or id."""
         return self.mailbox.get_folder(folder_name=folder_name, folder_id=folder_id)
 
 
-class Mailbox(off.mailbox.MailBox):
+class Mailbox(MailBox):
     folder_constructor = MessageFolder

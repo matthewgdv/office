@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 class FluentEntity:
     """A class representing an entity that doesn't yet exist. All public methods allow chaining."""
     entity: Union[Message, Event] = None
+    _signing: bool
+    _temp_body: str
 
     def subject(self, subject: str) -> FluentEntity:
         """Set the subject of the message."""

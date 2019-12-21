@@ -10,6 +10,7 @@ class Config(iotools.Config):
     name = office.__name__
     default = {"default_connections": {"office": "", "blob": ""}, "connections": {"office": {}, "blob": {}}}
 
+    # noinspection PyShadowingBuiltins
     def add_office_connection(self, connection: str, id: str, secret: str, default_email: str, is_default: bool = False) -> None:
         """Add a new office connection with the given application key, secret and default email resource."""
         self.data.connections.office[connection] = dict(id=id, secret=secret, default_email=default_email)

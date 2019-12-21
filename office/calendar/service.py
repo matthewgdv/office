@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from O365 import calendar
 
-from miscutils import lazy_property
+from miscutils import cached_property
 
 from .calendar import Calendar
 from .event import Event
@@ -20,15 +20,15 @@ class CalendarService:
         self.office = office
         self.schedule = Schedule(parent=self.office.account)
 
-    def __getitem__(self, key: Union[str, int]) -> Calendar:
-        return self.custom(calendar_name=key) if isinstance(key, str) else (self.custom(calendar_id=key) if isinstance(key, int) else None)
+    def __getitem__(self, key: str) -> Calendar:
+        return self.custom(calendar_name=key)
 
-    @lazy_property
+    @cached_property
     def default(self) -> Calendar:
         """A property that returns the default calendar."""
         return self.schedule.get_default_calendar()
 
-    def custom(self, calendar_name: str = None, calendar_id: int = None) -> Calendar:
+    def custom(self, calendar_name: str = None, calendar_id: str = None) -> Calendar:
         """Return the given custom folder by name or id."""
         return self.schedule.get_calendar(calendar_name=calendar_name, calendar_id=calendar_id)
 

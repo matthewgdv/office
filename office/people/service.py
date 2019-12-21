@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, List, Dict, TYPE_CHECKING
 
-from O365 import directory
+from O365.directory import Directory
 
 from subtypes import Str, NameSpace
-from miscutils import lazy_property, is_running_in_ipython
+from miscutils import cached_property, is_running_in_ipython
 
 from .contact import Contact
 from .folder import ContactFolder
@@ -21,20 +21,20 @@ class PeopleService:
         self.office = office
 
         if is_running_in_ipython():
-            self.contacts
+            assert self.contacts
 
-    @lazy_property
+    @cached_property
     def contacts(self) -> ContactNameSpace:
         return ContactNameSpace(service=self)
 
-    @lazy_property
+    @cached_property
     def personal(self) -> ContactFolder:
         return ContactFolder(parent=self.office.account, main_resource=self.office.account.main_resource, name="Personal Address Book", root=True)
 
-    @lazy_property
-    def active_directory(self) -> ContactFolder:
+    @cached_property
+    def active_directory(self) -> Directory:
         """A property that returns the global address list."""
-        return directory.Directory(parent=self.office.account)
+        return Directory(parent=self.office.account)
 
 
 class ContactNameSpace(NameSpace):

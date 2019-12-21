@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, List, Union, Collection, TYPE_CHECKING
+from typing import Any, List, Union, Collection, TYPE_CHECKING, Optional
 
 import O365.message as message
 import O365.utils.utils as utils
 
 from subtypes import Str, Markup
-from pathmagic import Dir, PathLike
+from pathmagic import Dir, PathLike, File
 from iotools import HtmlGui
 
 from ..attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
@@ -52,21 +52,24 @@ class Message(message.Message):
 
     def reply(self, *args: Any, **kwargs: Any) -> FluentMessage:
         """Create a new FluentMessage serving as a reply to this message."""
-        return super().reply(*args, **kwargs).fluent
+        new: Message = super().reply(*args, **kwargs)
+        return new.fluent
 
-    def forward(self, *args: Any, **kwargs: Any) -> FluentMessage:
+    def forward(self) -> FluentMessage:
         """Create a new FluentMessage serving as a forward of this message."""
-        return super().forward(*args, **kwargs).fluent
+        new: Message = super().forward()
+        return new.fluent
 
     def copy(self, *args: Any, **kwargs: Any) -> FluentMessage:
         """Create a new FluentMessage serving as a copy of this message."""
-        return super().copy(*args, **kwargs).fluent
+        new: Message = super().copy(*args, **kwargs)
+        return new.fluent
 
     def render(self) -> None:
         """Render the message body html in a separate window. Will block until the window has been closed by a user."""
         HtmlGui(name=self.subject, text=self.body).start()
 
-    def save_attachments_to(self, path: PathLike) -> bool:
+    def save_attachments_to(self, path: PathLike) -> List[File]:
         """Save all attachments of this message to the given folder path."""
         if not self.has_attachments:
             return []
@@ -165,7 +168,7 @@ class FluentMessage(FluentEntity):
     def __init__(self, parent: Message = None) -> None:
         self.entity, self.office, self._signing = parent, parent.con.office, False
         self.entity.sender.address = self.office.address
-        self._temp_body: str = None
+        self._temp_body: Optional[str] = None
 
     def from_(self, address: str) -> FluentMessage:
         """Set the email address this message will appear to originate from."""

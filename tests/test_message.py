@@ -1,4 +1,4 @@
-import pytest
+# import pytest
 
 
 def test_BulkMessageAction_copy():

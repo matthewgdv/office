@@ -56,7 +56,7 @@ class BooleanAttributeMeta(BaseAttributeMeta):
     def __invert__(self) -> BooleanExpression:
         return BooleanExpression(self.name, utils.Query.equals, False)
 
-    def _resolve(self) -> BooleanExpressionClause:
+    def _resolve(self) -> BooleanExpression:
         return BooleanExpression(self.name, utils.Query.equals, True)
 
 
@@ -102,7 +102,7 @@ class NonFilterableAttribute(BaseAttribute, metaclass=NonFilterableMeta):
 class FilterableAttribute(BaseAttribute):
     """An abstract base class for concrete attribute classes to inherit from which can be used in the filter clause of a query."""
 
-    def __init__(self, order_by: str):
+    def __init__(self, order_by: Direction):
         self.order_by, self.ascending = order_by, order_by == Direction.ASCENDING
 
     @classmethod
@@ -194,5 +194,5 @@ class BooleanExpression(BaseExpressionElement):
 class BooleanExpressionClause(BaseExpressionElement):
     """A class representing a binary clause of where each side contains either a boolean expression or another clause."""
 
-    def __init__(self, left: Union[BooleanExpression, BooleanExpressionClause], operator: utils.ChainOperator, right: Union[BooleanExpression, BooleanExpressionClause]) -> None:
+    def __init__(self, left: BaseExpressionElement, operator: utils.ChainOperator, right: Union[BooleanExpression, BooleanExpressionClause]) -> None:
         self.left, self.operator, self.right = left, operator, right

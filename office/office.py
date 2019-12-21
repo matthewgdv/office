@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 import webbrowser
 
 from maybe import Maybe
 from miscutils import Supressor
 
 with Supressor():
-    import O365 as off
+    from O365 import Account as SuperAccount, FileSystemTokenBackend
 
 if True:
     from .config import Config
@@ -26,13 +26,13 @@ class Office:
     ]
 
     def __init__(self, email_address: str = None, connection: str = None) -> None:
-        self.outlook: OutlookService = None
-        self.people: PeopleService = None
-        self.calendar: CalendarService = None
+        self.outlook: Optional[OutlookService] = None
+        self.people: Optional[PeopleService] = None
+        self.calendar: Optional[CalendarService] = None
 
         self.config = Config()
         self.connection = Maybe(connection).else_(self.config.data.default_connections.office)
-        self.token = off.FileSystemTokenBackend(token_path=str(self.config.folder.new_dir("tokens")), token_filename=f"{self.connection}.txt")
+        self.token = FileSystemTokenBackend(token_path=str(self.config.folder.new_dir("tokens")), token_filename=f"{self.connection}.txt")
 
         settings = self.config.data.connections.office[self.connection]
         self.address = Maybe(email_address).else_(settings.default_email)
@@ -57,7 +57,7 @@ class Office:
         self.outlook, self.people, self.calendar = OutlookService(office=self), PeopleService(office=self), CalendarService(office=self)
 
 
-class Account(off.Account):
+class Account(SuperAccount):
     def __init__(self, *args: Any, office: Office = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.con.office = office

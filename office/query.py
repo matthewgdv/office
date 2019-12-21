@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Any, Callable, Collection, Generator, Tuple, Union
+from typing import Any, Callable, Collection, Generator, Tuple, Union, Optional
 
 import O365.utils.utils as utils
 
@@ -18,10 +18,10 @@ class Query:
         self._container = container
         self._casing_function = self._container.protocol.casing_function
         self._query = utils.Query(protocol=self._container.protocol)
-        self._select: Tuple[BaseAttribute, ...] = None
-        self._where: BooleanExpressionClause = None
-        self._order: str = None
-        self._limit: int = None
+        self._select: Optional[Tuple[BaseAttribute, ...]] = None
+        self._where: Optional[BooleanExpressionClause] = None
+        self._order: Optional[FilterableAttribute] = None
+        self._limit: Optional[int] = None
 
     def __repr__(self) -> str:
         return repr(self._query)

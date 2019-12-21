@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Union, Collection, TYPE_CHECKING
+from typing import Union, Collection, TYPE_CHECKING, Optional
 
 import O365.calendar as calendar
 
@@ -19,7 +19,7 @@ class Event(calendar.Event):
         return f"{type(self).__name__}({', '.join([f'{attr}={repr(val)}' for attr, val in self.__dict__.items() if not attr.startswith('_')])})"
 
     def __str__(self) -> str:
-        return self.text
+        return self.body
 
     @property
     def fluent(self) -> FluentEvent:
@@ -48,7 +48,9 @@ class FluentEvent(FluentEntity):
 
     def __init__(self, parent: Event = None) -> None:
         self.entity, self.office = parent, parent.con.office
-        self._temp_body: str = None
+        self._temp_body: Optional[str] = None
+        self._start: Optional[dt.datetime] = None
+        self._end: Optional[dt.datetime] = None
 
     def from_(self, address: str) -> FluentEvent:
         """Set the email address this event will appear to originate from."""

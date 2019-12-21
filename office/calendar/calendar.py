@@ -21,3 +21,6 @@ class Calendar(calendar.Calendar):
     def event(self) -> FluentEvent:
         """A property that will create a new fluent event."""
         return self.new_event().fluent
+
+    def new_event(self, subject: str = None) -> Event:
+        return super().new_event(subject=subject)

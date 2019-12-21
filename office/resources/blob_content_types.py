@@ -1,4 +1,4 @@
-{
+content_types = {
 	"x3d": "application/vnd.hzn-3d-crossword",
 	"3gp": "video/3gpp",
 	"3g2": "video/3gpp2",
@@ -265,7 +265,7 @@
 	"joda": "application/vnd.joost.joda-archive",
 	"jpm": "video/jpm",
 	"jpeg": "image/jpeg",
-	"jpg": "image/jpeg" ,
+	"jpg": "image/jpeg",
 	"jpgv": "video/jpeg",
 	"ktz": "application/vnd.kahootz",
 	"mmd": "application/vnd.chipnuts.karaoke-mmd",
