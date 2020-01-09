@@ -25,13 +25,22 @@ class BlobStorage:
         self.containers = BlobContainerNameSpace(self)
         self.blob_type_mappings = blob_content_types.content_types
 
+    def new_container(self, name: str) -> BlobContainer:
+        self.service.create_container(name)
+        self.containers()
+        return self.containers[name]
+
 
 class BlobContainerNameSpace(NameSpace):
     """A namespace class representing a collection of blob containers."""
 
     def __init__(self, blob_manager: BlobStorage) -> None:
         self._manager = blob_manager
-        super().__init__({container.name: BlobContainer(container=container, blob_manager=self._manager) for container in self._manager.service.list_containers()})
+        self()
+
+    def __call__(self, *args, **kwargs) -> BlobContainerNameSpace:
+        super().__call__({container.name: BlobContainer(container=container, blob_manager=self._manager) for container in self._manager.service.list_containers()})
+        return self
 
 
 class BlobContainer:
@@ -65,9 +74,9 @@ class BlobContainer:
         """Download the named blob to the given folder. It will keep its blob 'basename' as its new name."""
         return self[name].download_to(folder)
 
-    def download_blob_to_path(self, name: str, path: PathLike) -> PathLike:
+    def download_blob_as(self, name: str, path: PathLike) -> PathLike:
         """Download the named blob to the given path."""
-        return self[name].download_to_path(path)
+        return self[name].download_as(path)
 
     def upload_blob_from(self, file: PathLike, name: str = None) -> Blob:
         """Create a new blob within this container in storage from the given file path."""
@@ -79,6 +88,13 @@ class BlobContainer:
         self.service.create_blob_from_path(container_name=self.name, blob_name=blob_name, file_path=str(file), content_settings=ContentSettings(content_type=content_type))
 
         return self[blob_name]
+
+    def delete(self) -> None:
+        if list(self):
+            raise PermissionError(f"May not delete non-empty ({len(self)} blobs found) container '{self.name}'.")
+        else:
+            self.service.delete_container(self.name)
+            self.manager.containers()
 
 
 class Blob:
@@ -97,7 +113,7 @@ class Blob:
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=str(file))
         return file
 
-    def download_to_path(self, path: PathLike) -> File:
+    def download_as(self, path: PathLike) -> File:
         """Download this blob to the given path."""
         self.service.get_blob_to_path(container_name=self.container.name, blob_name=self.name, file_path=os.fspath(path))
         return File.from_pathlike(path)
