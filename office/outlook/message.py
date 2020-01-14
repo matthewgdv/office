@@ -32,6 +32,9 @@ class Message(message.Message):
     def __str__(self) -> str:
         return self.text
 
+    def __hash__(self) -> int:
+        return id(self)
+
     def _repr_html_(self) -> str:
         return f"<strong><mark>{self.subject}</mark></strong><br><br>{self.body}"
 
