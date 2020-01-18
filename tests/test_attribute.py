@@ -1,209 +1,121 @@
 # import pytest
 
 
-def test_Attribute___init__():
-    assert True
+class TestDirection:
+    pass
 
 
-def test_Attribute___repr__():
-    assert True
+class TestBaseAttributeMeta:
+    def test___hash__(self):  # synced
+        assert True
 
+    def test___eq__(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___and__():
-    assert True
+    def test___ne__(self):  # synced
+        assert True
 
+    def test___lt__(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___eq__():
-    assert True
+    def test___le__(self):  # synced
+        assert True
 
+    def test___gt__(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___ge__():
-    assert True
+    def test___ge__(self):  # synced
+        assert True
 
+    def test___and__(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___gt__():
-    assert True
+    def test___or__(self):  # synced
+        assert True
 
+    def test__resolve(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___le__():
-    assert True
 
+class TestBooleanAttributeMeta:
+    def test___invert__(self):  # synced
+        assert True
 
-def test_BaseAttributeMeta___lt__():
-    assert True
+    def test__resolve(self):  # synced
+        assert True
 
 
-def test_BaseAttributeMeta___ne__():
-    assert True
+class TestEnumerativeAttributeMeta:
+    def test___new__():  # synced
+        assert True
 
+    def test_make_function():  # synced
+        assert True
 
-def test_BaseAttributeMeta___or__():
-    assert True
+    def test_template():  # synced
+        assert True
 
 
-def test_BaseAttributeMeta__resolve():
-    assert True
+class TestNonFilterableMeta:
+    def test___getattr__(self):  # synced
+        assert True
 
 
-def test_BaseAttribute___repr__():
-    assert True
+class TestBaseAttribute:
+    pass
 
 
-def test_BooleanAttributeMeta___and__():
-    assert True
+class TestNonFilterableAttribute:
+    pass
 
 
-def test_BooleanAttributeMeta___eq__():
-    assert True
+class TestFilterableAttribute:
+    def test_contains():  # synced
+        assert True
 
+    def test_startswith():  # synced
+        assert True
 
-def test_BooleanAttributeMeta___ge__():
-    assert True
+    def test_endswith():  # synced
+        assert True
 
+    def test_asc():  # synced
+        assert True
 
-def test_BooleanAttributeMeta___gt__():
-    assert True
+    def test_desc():  # synced
+        assert True
 
 
-def test_BooleanAttributeMeta___invert__():
-    assert True
+class TestAttribute:
+    pass
 
 
-def test_BooleanAttributeMeta___le__():
-    assert True
+class TestBooleanAttribute:
+    pass
 
 
-def test_BooleanAttributeMeta___lt__():
-    assert True
+class TestEnumerativeAttribute:
+    pass
 
 
-def test_BooleanAttributeMeta___ne__():
-    assert True
+class TestBaseExpressionElement:
+    def test___and__(self):  # synced
+        assert True
 
+    def test___or__(self):  # synced
+        assert True
 
-def test_BooleanAttributeMeta___or__():
-    assert True
+    def test__resolve(self):  # synced
+        assert True
 
 
-def test_BooleanAttributeMeta__resolve():
-    assert True
+class TestBooleanExpression:
+    def test___invert__(self):  # synced
+        assert True
 
+    def test_negate(self):  # synced
+        assert True
 
-def test_BooleanAttribute___init__():
-    assert True
 
-
-def test_BooleanAttribute___repr__():
-    assert True
-
-
-def test_BooleanExpressionClause___and__():
-    assert True
-
-
-def test_BooleanExpressionClause___init__():
-    assert True
-
-
-def test_BooleanExpressionClause___or__():
-    assert True
-
-
-def test_BooleanExpressionClause__coalesce():
-    assert True
-
-
-def test_BooleanExpressionClause__resolve():
-    assert True
-
-
-def test_BooleanExpression___and__():
-    assert True
-
-
-def test_BooleanExpression___init__():
-    assert True
-
-
-def test_BooleanExpression___invert__():
-    assert True
-
-
-def test_BooleanExpression___or__():
-    assert True
-
-
-def test_BooleanExpression___repr__():
-    assert True
-
-
-def test_BooleanExpression__resolve():
-    assert True
-
-
-def test_BooleanExpression_negate():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___and__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___eq__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___ge__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___gt__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___le__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___lt__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___ne__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___new__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta___or__():
-    assert True
-
-
-def test_EnumerativeAttributeMeta__resolve():
-    assert True
-
-
-def test_EnumerativeAttribute___init__():
-    assert True
-
-
-def test_EnumerativeAttribute___repr__():
-    assert True
-
-
-def test_FilterableAttribute___init__():
-    assert True
-
-
-def test_FilterableAttribute___repr__():
-    assert True
-
-
-def test_NonFilterableAttribute___repr__():
-    assert True
-
-
-def test_NonFilterableMeta___getattr__():
-    assert True
+class TestBooleanExpressionClause:
+    pass

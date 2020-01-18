@@ -1,89 +1,75 @@
 # import pytest
 
 
-def test_BulkActionContext___bool__():
-    assert True
+class TestQuery:
+    def test___call__(self):  # synced
+        assert True
+
+    def test_bulk(self):  # synced
+        assert True
+
+    def test_select(self):  # synced
+        assert True
+
+    def test_where(self):  # synced
+        assert True
+
+    def test_order_by(self):  # synced
+        assert True
+
+    def test_limit(self):  # synced
+        assert True
+
+    def test_execute(self):  # synced
+        assert True
+
+    def test__build_select_clause(self):  # synced
+        assert True
+
+    def test__build_where_clause(self):  # synced
+        assert True
+
+    def test__build_order_by_clause(self):  # synced
+        assert True
+
+    def test__build_boolean_expression_clause(self):  # synced
+        assert True
+
+    def test__build_side(self):  # synced
+        assert True
+
+    def test__build_chain_operator(self):  # synced
+        assert True
+
+    def test__build_boolean_expression(self):  # synced
+        assert True
+
+    def test__negation(self):  # synced
+        assert True
+
+    def test__precedence_grouping(self):  # synced
+        assert True
 
 
-def test_BulkActionContext___enter__():
-    assert True
+class TestBulkActionContext:
+    def test___len__(self):  # synced
+        assert True
+
+    def test___bool__(self):  # synced
+        assert True
+
+    def test_commit(self):  # synced
+        assert True
+
+    def test_execute(self):  # synced
+        assert True
+
+    def test__execute_query(self):  # synced
+        assert True
+
+    def test__perform_bulk_action(self):  # synced
+        assert True
 
 
-def test_BulkActionContext___exit__():
-    assert True
-
-
-def test_BulkActionContext___init__():
-    assert True
-
-
-def test_BulkActionContext___len__():
-    assert True
-
-
-def test_BulkActionContext__execute_query():
-    assert True
-
-
-def test_BulkActionContext__perform_bulk_action():
-    assert True
-
-
-def test_BulkActionContext_commit():
-    assert True
-
-
-def test_BulkActionContext_execute():
-    assert True
-
-
-def test_BulkAction___init__():
-    assert True
-
-
-def test_Query___call__():
-    assert True
-
-
-def test_Query___init__():
-    assert True
-
-
-def test_Query__build_clause_chunk():
-    assert True
-
-
-def test_Query__build_select_clause():
-    assert True
-
-
-def test_Query__build_where_clause():
-    assert True
-
-
-def test_Query__negation_context():
-    assert True
-
-
-def test_Query_execute():
-    assert True
-
-
-def test_Query_get_messages():
-    assert True
-
-
-def test_Query_limit():
-    assert True
-
-
-def test_Query_order_by():
-    assert True
-
-
-def test_Query_select():
-    assert True
-
-
-def test_Query_where():
-    assert True
+class TestBulkAction:
+    pass

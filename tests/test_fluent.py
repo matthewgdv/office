@@ -1,33 +1,24 @@
 # import pytest
 
 
-def test_FluentMessage___init__():
-    assert True
+class TestFluentEntity:
+    def test_subject(self):  # synced
+        assert True
 
+    def test_body(self):  # synced
+        assert True
 
-def test_FluentMessage_attach():
-    assert True
+    def test_attach(self):  # synced
+        assert True
 
+    def test_sign(self):  # synced
+        assert True
 
-def test_FluentMessage_body():
-    assert True
+    def test_importance(self):  # synced
+        assert True
 
+    def test_categories(self):  # synced
+        assert True
 
-def test_FluentMessage_from_():
-    assert True
-
-
-def test_FluentMessage_send():
-    assert True
-
-
-def test_FluentMessage_sign():
-    assert True
-
-
-def test_FluentMessage_subject():
-    assert True
-
-
-def test_FluentMessage_to():
-    assert True
+    def test__parse_contacts_to_emails(self):  # synced
+        assert True
