@@ -1,4 +1,4 @@
-Welcome to maybe's documentation!
+Welcome to office365's documentation!
 =================================
 
 .. toctree::
