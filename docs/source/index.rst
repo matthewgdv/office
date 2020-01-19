@@ -1,5 +1,5 @@
 Welcome to office365's documentation!
-=================================
+=====================================
 
 .. toctree::
    :caption: Contents:
