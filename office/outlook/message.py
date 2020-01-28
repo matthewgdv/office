@@ -5,7 +5,7 @@ from typing import Any, List, Union, Collection, TYPE_CHECKING, Optional
 import O365.message as message
 import O365.utils.utils as utils
 
-from subtypes import Str, Markup
+from subtypes import Str, Html
 from pathmagic import Dir, PathLike, File
 from iotools import HtmlGui
 
@@ -41,16 +41,16 @@ class Message(message.Message):
     @property
     def text(self) -> str:
         """A property controlling access to the string form of the message body, with all html tags and constructs handled and stripped out."""
-        return str(Str(Markup(self.body).text).re.sub(r"<!--.*?-->", "").re.sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
+        return str(Str(Html(self.body).text).re.sub(r"<!--.*?-->", "").re.sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
 
     @property
-    def markup(self) -> Markup:
-        """A property controlling access to the subtypes.Markup object corresponding to this message's html body."""
-        return Markup(self.body)
+    def html(self) -> Html:
+        """A property controlling access to the subtypes.Html object corresponding to this message's html body."""
+        return Html(self.body)
 
     @property
     def fluent(self) -> FluentMessage:
-        """A property controlling access to the subtypes.Markup object corresponding to this message's html body."""
+        """Convert this Message to an equivalent FluentMessage."""
         return FluentMessage(parent=self)
 
     def reply(self, *args: Any, **kwargs: Any) -> FluentMessage:
