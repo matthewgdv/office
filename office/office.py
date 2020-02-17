@@ -21,10 +21,13 @@ class Office:
     """The primary class controlling access to the entirety of this library via its attributes named after Office365 services."""
 
     scopes = [
-        "offline_access", "User.Read", "Mail.ReadWrite", "Mail.Send", "Mail.ReadWrite.Shared", "Mail.Send.Shared",
-        "Contacts.ReadWrite", "Contacts.ReadWrite.Shared", "Calendars.ReadWrite", "Calendars.ReadWrite.Shared",
-        "Files.ReadWrite", "Files.ReadWrite.All", "Sites.Read.All", "Sites.ReadWrite.All",
+        "offline_access",
         "User.Read", "User.ReadBasic.All",
+        "Mail.ReadWrite", "Mail.ReadWrite.Shared", "Mail.Send", "Mail.Send.Shared",
+        "Contacts.ReadWrite", "Contacts.ReadWrite.Shared",
+        "Calendars.ReadWrite", "Calendars.ReadWrite.Shared",
+        "Files.ReadWrite", "Files.ReadWrite.All",
+        "Sites.Read.All", "Sites.ReadWrite.All",
     ]
 
     outlook: Optional[OutlookService] = None
