@@ -84,7 +84,7 @@ class BlobContainer:
         """Download the named blob to the given path."""
         return self[name].download_as(path)
 
-    def upload_blob_from(self, file: PathLike, name: str = None) -> Blob:
+    def upload_blob_from_file(self, file: PathLike, name: str = None) -> Blob:
         """Create a new blob within this container in storage from the given file path."""
         file = File.from_pathlike(file)
         blob_name = file.name if name is None else name
@@ -93,6 +93,11 @@ class BlobContainer:
             self.client.upload_blob(name=blob_name, data=stream)
 
         return self[blob_name]
+
+    def upload_blob_from_bytes(self, data: bytes, name: str) -> Blob:
+        """Create a new blob within this container in storage from the given file path."""
+        self.client.upload_blob(name=name, data=data)
+        return self[name]
 
     def delete(self) -> None:
         if list(self):

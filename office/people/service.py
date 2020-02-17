@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, List, Dict, TYPE_CHECKING
 
-from O365.directory import Directory
+from O365.directory import Directory, User
 
 from subtypes import Str, NameSpace
 from miscutils import cached_property, is_running_in_ipython
@@ -33,8 +33,13 @@ class PeopleService:
 
     @cached_property
     def active_directory(self) -> Directory:
-        """A property that returns the global address list."""
-        return Directory(parent=self.office.account)
+        """A property that returns the Azure Active Directory."""
+        return Directory(parent=self.office.account, main_resource="users")
+
+    @cached_property
+    def me(self) -> User:
+        """A property that returns the Azure Active Directory."""
+        return Directory(parent=self.office.account, main_resource="me").get_current_user()
 
 
 class ContactNameSpace(NameSpace):
