@@ -170,7 +170,7 @@ class FluentMessage(FluentEntity):
 
     def __init__(self, parent: Message = None) -> None:
         self.entity, self.office, self._signing = parent, parent.con.office, False
-        self.entity.sender.address = self.office.address
+        self.entity.sender.address = self.office.resource
         self._temp_body: Optional[str] = None
 
     def from_(self, address: str) -> FluentMessage:
