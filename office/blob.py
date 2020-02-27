@@ -7,7 +7,6 @@ from subtypes import NameSpace, Str
 from pathmagic import File, Dir, PathLike
 from miscutils import cached_property
 
-from office.resources import blob_content_types
 from .config import Config
 
 if TYPE_CHECKING:
@@ -32,12 +31,15 @@ class BlobStorage:
 
         self.client = BlobServiceClient(account_url=settings.account, credential=settings.key)
         self.containers = BlobContainerNameSpace(self)
-        self.blob_type_mappings = blob_content_types.content_types
 
     def new_container(self, name: str) -> BlobContainer:
         self.client.create_container(name)
         self.containers()
         return self.containers[name]
+
+    def blob_from_url(self, url: str) -> Blob:
+        container, blob = Str(url).slice.after(f"{self.client.primary_hostname}/").split("/", 1)
+        return self.containers[container][blob]
 
 
 class BlobContainerNameSpace(NameSpace):
