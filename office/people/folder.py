@@ -15,6 +15,9 @@ class ContactFolder(address_book.ContactFolder):
 
     message_constructor, contact_constructor = Message, Contact
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(name={self.name})"
+
     @property
     def folders(self) -> ContactFolderQuery:
         """A property that will create a new query against the folders contained within this folder."""

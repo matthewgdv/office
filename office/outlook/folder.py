@@ -14,6 +14,9 @@ class MessageFolder(mailbox.Folder):
 
     message_constructor = Message
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(name={self.name})"
+
     @property
     def folders(self) -> MessageFolderQuery:
         """A property that will create a new query against the folders contained within this folder."""
