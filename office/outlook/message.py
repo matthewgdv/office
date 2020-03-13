@@ -7,7 +7,6 @@ import O365.utils.utils as utils
 
 from subtypes import Str, Html
 from pathmagic import Dir, PathLike, File
-from iotools import HtmlGui
 
 from ..attribute import Attribute, NonFilterableAttribute, EnumerativeAttribute, BooleanAttribute
 from ..query import Query, BulkAction, BulkActionContext
@@ -70,6 +69,7 @@ class Message(message.Message):
 
     def render(self) -> None:
         """Render the message body html in a separate window. Will block until the window has been closed by a user."""
+        from iotools import HtmlGui
         HtmlGui(name=self.subject, text=self.body).start()
 
     def save_attachments_to(self, path: PathLike) -> List[File]:
