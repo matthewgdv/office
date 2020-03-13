@@ -10,26 +10,17 @@ from miscutils import cached_property
 from .config import Config
 
 if TYPE_CHECKING:
-    try:
-        from azure.storage_new.blob import ContainerClient, BlobClient
-    except ImportError:
-        from azure.storage.blob import ContainerClient, BlobClient
+    from azure.storage.blob import ContainerClient, BlobClient
 
 
 class BlobStorage:
     """A class representing a blob storage account. Takes a connection alias which must exist in the library config settings. If none is provided, the default connection will be used."""
 
-    def __init__(self, connection: str = None) -> None:
-        try:
-            from azure.storage_new.blob import BlobServiceClient
-        except ImportError:
-            from azure.storage.blob import BlobServiceClient
+    def __init__(self, url: str, key: str) -> None:
+        from azure.storage.blob import BlobServiceClient
 
         self.config = Config()
-        self.connection = Maybe(connection).else_(self.config.data.default_connections.blob)
-        settings = self.config.data.connections.blob[self.connection]
-
-        self.client = BlobServiceClient(account_url=settings.account, credential=settings.key)
+        self.client = BlobServiceClient(account_url=url, credential=key)
         self.containers = BlobContainerNameSpace(self)
 
     def new_container(self, name: str) -> BlobContainer:
@@ -40,6 +31,13 @@ class BlobStorage:
     def blob_from_url(self, url: str) -> Blob:
         container, blob = Str(url).slice.after(f"{self.client.primary_hostname}/").split("/", 1)
         return self.containers[container][blob]
+
+    @classmethod
+    def from_connection(cls, connection: str = None) -> BlobStorage:
+        config = Config()
+        connection = connection or config.data.default_connections.blob
+        credentials = config.data.connections.blob[connection]
+        return cls(url=credentials.url, key=credentials.key)
 
 
 class BlobContainerNameSpace(NameSpace):
