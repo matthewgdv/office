@@ -3,7 +3,6 @@ from __future__ import annotations
 from io import BytesIO
 from typing import Iterator, TYPE_CHECKING
 
-from azure.core.exceptions import ResourceNotFoundError
 from subtypes import NameSpace, Str, Dict_
 from pathmagic import File, Dir, PathLike
 from miscutils import cached_property, ReprMixin
@@ -138,7 +137,7 @@ class Blob:
         try:
             if self.properties:
                 return True
-        except ResourceNotFoundError:
+        except Exception:
             return False
 
 
@@ -154,7 +153,6 @@ class UploadAccessor(ReprMixin):
     def from_file(self, file: PathLike) -> Blob:
         """Create a new blob within this container in storage from the given file path."""
         file = File.from_pathlike(file)
-        blob_name = file.name if name is None else name
 
         with open(file, "rb") as stream:
             self.parent.client.upload_blob(data=stream, overwrite=self.overwrite)
