@@ -1,4 +1,4 @@
-azure-storage
+azure-storage-blob
 O365
 pymiscutils
 pathmagic
