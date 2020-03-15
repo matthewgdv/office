@@ -1,4 +1,3 @@
-azure
 azure-storage
 O365
 pymiscutils
