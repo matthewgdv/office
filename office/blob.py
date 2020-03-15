@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from io import BytesIO
 from typing import Iterator, TYPE_CHECKING
 
-from maybe import Maybe
-from subtypes import NameSpace, Str
+from azure.core.exceptions import ResourceNotFoundError
+from subtypes import NameSpace, Str, Dict_
 from pathmagic import File, Dir, PathLike
-from miscutils import cached_property
+from miscutils import cached_property, ReprMixin
 
 from .config import Config
 
@@ -51,6 +52,9 @@ class BlobContainerNameSpace(NameSpace):
         super().__call__({container.name: BlobContainer(name=container.name, storage=self._storage) for container in self._storage.client.list_containers()})
         return self
 
+    def __getitem__(self, name: str) -> BlobContainer:
+        return super().__getitem__(name=name)
+
 
 class BlobContainer:
     """A class representing a blob container, with methods for accessing (supports item access) and iterating over its blobs."""
@@ -82,28 +86,9 @@ class BlobContainer:
     def client(self) -> ContainerClient:
         return self.storage.client.get_container_client(self.name)
 
-    def download_blob_to(self, name: str, folder: PathLike) -> PathLike:
-        """Download the named blob to the given folder. It will keep its blob 'basename' as its new name."""
-        return self[name].download_to(folder)
-
-    def download_blob_as(self, name: str, path: PathLike) -> PathLike:
-        """Download the named blob to the given path."""
-        return self[name].download_as(path)
-
-    def upload_blob_from_file(self, file: PathLike, name: str = None) -> Blob:
-        """Create a new blob within this container in storage from the given file path."""
-        file = File.from_pathlike(file)
-        blob_name = file.name if name is None else name
-
-        with open(file, "rb") as stream:
-            self.client.upload_blob(name=blob_name, data=stream)
-
-        return self[blob_name]
-
-    def upload_blob_from_bytes(self, data: bytes, name: str) -> Blob:
-        """Create a new blob within this container in storage from the given file path."""
-        self.client.upload_blob(name=name, data=data)
-        return self[name]
+    @cached_property
+    def properties(self) -> Dict_:
+        return Dict_(self.client.get_container_properties())
 
     def delete(self) -> None:
         if list(self):
@@ -120,30 +105,105 @@ class Blob:
         self.name, self.container = name, container
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={repr(self.name)}, container={repr(self.container.name)})"
+        return f"{type(self).__name__}(name={repr(self.name)}, container={repr(self.container.name)}, exists={bool(self)})"
+
+    def __bool__(self) -> bool:
+        return self.exists()
 
     @cached_property
     def client(self) -> BlobClient:
         return self.container.client.get_blob_client(self.name)
 
-    def download_to(self, folder: PathLike, name: str = None) -> File:
-        """Download this blob to the given folder. It will keep its blob 'basename' as its new name."""
-        file = Dir.from_pathlike(folder).new_file(Str(self.name).slice.after_last("/") or self.name if name is None else name)
+    @cached_property
+    def properties(self) -> Dict_:
+        return Dict_(self.client.get_blob_properties())
 
-        with open(file, "wb") as stream:
-            self.client.download_blob().readinto(stream)
+    @property
+    def url(self) -> str:
+        return self.client.url
 
-        return file
+    @cached_property
+    def upload(self) -> UploadAccessor:
+        return UploadAccessor(parent=self)
 
-    def download_as(self, file: PathLike) -> File:
-        """Download this blob to the given path."""
-        file = File.from_pathlike(file)
-
-        with open(file, "wb") as stream:
-            self.client.download_blob().readinto(stream)
-
-        return file
+    @cached_property
+    def download(self) -> DownloadAccessor:
+        return DownloadAccessor(parent=self)
 
     def delete(self) -> None:
         """Permanently delete this blob within its container in storage."""
         self.client.delete_blob()
+
+    def exists(self) -> bool:
+        try:
+            if self.properties:
+                return True
+        except ResourceNotFoundError:
+            return False
+
+
+class UploadAccessor(ReprMixin):
+    def __init__(self, parent: Blob) -> None:
+        self.parent = parent
+        self()
+
+    def __call__(self, overwrite: bool = False) -> UploadAccessor:
+        self.overwrite = overwrite
+        return self
+
+    def from_file(self, file: PathLike) -> Blob:
+        """Create a new blob within this container in storage from the given file path."""
+        file = File.from_pathlike(file)
+        blob_name = file.name if name is None else name
+
+        with open(file, "rb") as stream:
+            self.parent.client.upload_blob(data=stream, overwrite=self.overwrite)
+
+        return self.parent
+
+    def from_bytes(self, data: bytes) -> Blob:
+        """Create a new blob within this container in storage from the given file path."""
+        self.parent.client.upload_blob(data=data, overwrite=self.overwrite)
+        return self.parent
+
+    def from_stream(self, stream: BytesIO) -> Blob:
+        """Create a new blob within this container in storage from the given file path."""
+        stream.seek(0)
+        self.parent.client.upload_blob(data=stream, overwrite=self.overwrite)
+        return self.parent
+
+
+class DownloadAccessor(ReprMixin):
+    def __init__(self, parent: Blob) -> None:
+        self.parent = parent
+        self()
+
+    def __call__(self) -> UploadAccessor:
+        return self
+
+    def to_folder(self, folder: PathLike, name: str = None) -> File:
+        """Download this blob to the given folder. It will keep its blob 'basename' as its new name."""
+        file = Dir.from_pathlike(folder).new_file(Str(self.parent.name).slice.after_last("/") or self.parent.name if name is None else name)
+
+        with open(file, "wb") as stream:
+            self.parent.client.download_blob().readinto(stream)
+
+        return file
+
+    def as_file(self, file: PathLike) -> File:
+        """Download this blob to the given path."""
+        file = File.from_pathlike(file)
+
+        with open(file, "wb") as stream:
+            self.parent.client.download_blob().readinto(stream)
+
+        return file
+
+    def as_bytes(self) -> bytes:
+        return self.parent.client.download_blob().readall()
+
+    def as_stream(self, stream: BytesIO = None) -> BytesIO:
+        stream = stream or BytesIO()
+        self.parent.client.download_blob().readinto(stream)
+        stream.seek(0)
+        return stream
