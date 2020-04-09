@@ -10,7 +10,7 @@ with Supressor():
     from O365 import account, FileSystemTokenBackend
 
 if True:
-    from .config import Config
+    from .config import OfficeConfig as Config
     from .calendar import CalendarService
     from .outlook import OutlookService
     from .people import PeopleService
@@ -40,11 +40,10 @@ class Office:
         self.config, self.token, self.resource = Config(), token_backend, resource
         self.account = Account((client_id, client_secret), main_resource=self.resource, token_backend=self.token, office=self)
 
-        try:
-            self._establish_services()
-        except Exception:
+        if not self.account.con.token_backend.load_token():
             self.request_token()
-            self._establish_services()
+
+        self._establish_services()
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(account={self.resource})"
@@ -65,10 +64,10 @@ class Office:
     @classmethod
     def from_connection(cls, connection: str = None, resource: str = None) -> Office:
         config = Config()
-        connection = Maybe(connection).else_(config.data.default_connections.office)
+        connection = Maybe(connection).else_(config.data.default_connection)
         token_backend = FileSystemTokenBackend(token_path=str(config.folder.new_dir("tokens")), token_filename=f"{connection}.txt")
 
-        settings = config.data.connections.office[connection]
+        settings = config.data.connections[connection]
         resource = Maybe(resource).else_(settings.default_email)
         return cls(client_id=settings.id, client_secret=settings.secret, token_backend=token_backend, resource=resource)
 

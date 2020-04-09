@@ -7,7 +7,7 @@ from subtypes import NameSpace, Str, Dict_
 from pathmagic import File, Dir, PathLike
 from miscutils import cached_property, ReprMixin
 
-from .config import Config
+from .config import BlobConfig as Config
 
 if TYPE_CHECKING:
     from azure.storage.blob import ContainerClient, BlobClient
@@ -35,8 +35,8 @@ class BlobStorage:
     @classmethod
     def from_connection(cls, connection: str = None) -> BlobStorage:
         config = Config()
-        connection = connection or config.data.default_connections.blob
-        credentials = config.data.connections.blob[connection]
+        connection = connection or config.data.default_connection
+        credentials = config.data.connections[connection]
         return cls(url=credentials.url, key=credentials.key)
 
 
