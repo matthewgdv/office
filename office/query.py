@@ -8,7 +8,7 @@ import O365.utils.utils as utils
 from maybe import Maybe
 from miscutils import issubclass_safe
 
-from .attribute import BaseAttribute, Attribute, FilterableAttribute, BooleanExpression, BooleanExpressionClause
+from .attribute import BaseAttribute, Attribute, BooleanAttributeMeta, FilterableAttribute, BooleanExpression, BooleanExpressionClause
 
 
 class Query:
@@ -95,12 +95,15 @@ class Query:
             self._build_side(clause.right)
 
     def _build_side(self, side: Union[BooleanExpression, BooleanExpressionClause]) -> None:
+        if isinstance(side, BooleanAttributeMeta):
+            side = side._resolve()
+
         if isinstance(side, BooleanExpression):
             self._build_boolean_expression(side)
         elif isinstance(side, BooleanExpressionClause):
             self._build_boolean_expression_clause(side)
         else:
-            raise TypeError(f"The sides of '{type(BooleanExpressionClause).__name__}' must be '{type(BooleanExpression.__name__)}' or '{type(BooleanExpressionClause.__name__)}', not '{type(side).__name__}'.")
+            raise TypeError(f"The sides of '{type(BooleanExpressionClause).__name__}' must be '{type(BooleanExpression).__name__}' or '{type(BooleanExpressionClause).__name__}', not '{type(side).__name__}'.")
 
     def _build_chain_operator(self, operator: utils.ChainOperator) -> None:
         self._query.chain(operator.value)
