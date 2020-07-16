@@ -21,7 +21,7 @@ class OfficeConfig(iotools.Config):
     def set_default_office_connection(self, connection: str):
         """Set one of the existing office connections to be the default one by its connection alias."""
         if connection in self.data.connections:
-            self.data.default_connections = connection
+            self.data.default_connection = connection
         else:
             raise ValueError(f"Connection {connection} is not one of the currently registered connections: {', '.join(self.data.connections)}. Use {type(self).__name__}.add_connection() first.")
 

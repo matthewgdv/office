@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from typing import Any, Optional
+import os
+import threading
 import webbrowser
 
 from maybe import Maybe
 from miscutils import Supressor
+from pathmagic import Dir
 
 with Supressor():
     from O365 import account, FileSystemTokenBackend
@@ -37,7 +40,7 @@ class Office:
     connection: Optional[str] = None
 
     def __init__(self, client_id: str, client_secret: str, token_backend: BaseTokenBackend, resource: str) -> None:
-        self.config, self.token, self.resource = Config(), token_backend, resource
+        self.config, self.token, self.resource, self._auth_state = Config(), token_backend, resource, None
         self.account = Account((client_id, client_secret), main_resource=self.resource, token_backend=self.token, office=self)
 
         if not self.account.con.token_backend.load_token():
@@ -49,6 +52,31 @@ class Office:
         return f"{type(self).__name__}(account={self.resource})"
 
     def request_token(self) -> None:
+        """ """
+        import flask
+
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+        auth_url, callback_url = "http://localhost:5000/", "http://localhost:5000/callback/"
+        app = flask.Flask("Example")
+
+        @app.route('/')
+        def auth_step_one():
+            url, state = self.account.con.get_authorization_url(requested_scopes=Office.scopes, redirect_uri=callback_url)
+            self._auth_state = state
+            return flask.redirect(url)
+
+        @app.route('/callback/')
+        def auth_step_two_callback():
+            self.account.con.request_token(flask.request.url, state=self._auth_state, redirect_uri=callback_url)
+            flask.request.environ.get("werkzeug.server.shutdown")()
+            return "Successfully authenticated. You may now close the tab."
+
+        threading.Timer(2, lambda: webbrowser.open(auth_url)).start()
+
+        with Supressor():
+            app.run()
+
+    def request_token_old(self) -> None:
         """ """
         auth_url, state = self.account.connection.get_authorization_url(requested_scopes=self.scopes)
         webbrowser.open(auth_url)
