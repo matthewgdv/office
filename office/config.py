@@ -34,7 +34,7 @@ class BlobConfig(iotools.Config):
 
     def add_blob_connection(self, connection: str, account: str, key: str = None, is_default: bool = False) -> None:
         """Add a new blob storage connection with the given account name and key."""
-        self.data.connections[connection] = dict(account=account, key=key)
+        self.data.connections[connection] = dict(url=f"https://{account}.blob.core.windows.net/", key=key)
         if is_default:
             self.set_default_blob_connection(connection=connection)
 
