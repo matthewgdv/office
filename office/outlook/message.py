@@ -40,7 +40,7 @@ class Message(message.Message):
     @property
     def text(self) -> str:
         """A property controlling access to the string form of the message body, with all html tags and constructs handled and stripped out."""
-        return str(Str(Html(self.body).text).re.sub(r"<!--.*?-->", "").re.sub(r"(?<=\S)(\s)*?\n(\s)*?\n(\s)*?(?=\S)", "\n\n").strip())
+        return Html(self.body).text.strip()
 
     @property
     def html(self) -> Html:
