@@ -57,7 +57,7 @@ class Office:
 
         os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
         auth_url, callback_url = "http://localhost:5000/", "http://localhost:5000/callback/"
-        app = flask.Flask("Example")
+        app = flask.Flask("Authentication")
 
         @app.route('/')
         def auth_step_one():
