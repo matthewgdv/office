@@ -61,7 +61,7 @@ class ContactFolderQuery(Query):
     def __getitem__(self, key: str) -> ContactFolder:
         return self._container.get_folder(folder_name=key)
 
-    def execute(self) -> List[Contact]:
+    def execute(self) -> list[Contact]:
         """Execute this query and return any folders that match."""
         return list(self._container.get_folders(limit=self._limit, query=self._query))
 

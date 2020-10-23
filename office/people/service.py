@@ -46,7 +46,7 @@ class ContactNameSpace(NameSpace):
     """A namespace class containing a collection of the contacts within the global address book of the email address used to instanciate the Office object."""
 
     def __init__(self, service: PeopleService) -> None:
-        contacts_by_name: Dict[str, List[Contact]] = {}
+        contacts_by_name: dict[str, list[Contact]] = {}
         for contact in service.personal.get_contacts():
             contacts_by_name.setdefault(Str(contact.name).case.snake(), []).append(contact)
             contacts_by_name.setdefault(Str(contact.display_name).case.snake(), []).append(contact)

@@ -74,7 +74,7 @@ class MessageFolderQuery(Query):
     def __getitem__(self, key: str) -> MessageFolder:
         return self._container.get_folder(folder_name=key)
 
-    def execute(self) -> List[Message]:
+    def execute(self) -> list[Message]:
         """Execute this query and return any folders that match."""
         return list(self._container.get_folders(limit=self._limit, query=self._query))
 

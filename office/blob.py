@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from typing import Iterator, TYPE_CHECKING
 
-from subtypes import NameSpace, Str, Dict_
+from subtypes import NameSpace, Str, Dict
 from pathmagic import File, Dir, PathLike
 from miscutils import cached_property, ReprMixin
 
@@ -86,8 +86,8 @@ class BlobContainer:
         return self.storage.client.get_container_client(self.name)
 
     @cached_property
-    def properties(self) -> Dict_:
-        return Dict_(self.client.get_container_properties())
+    def properties(self) -> Dict:
+        return Dict(self.client.get_container_properties())
 
     def delete(self) -> None:
         if list(self):
@@ -114,8 +114,8 @@ class Blob:
         return self.container.client.get_blob_client(self.name)
 
     @cached_property
-    def properties(self) -> Dict_:
-        return Dict_(self.client.get_blob_properties())
+    def properties(self) -> Dict:
+        return Dict(self.client.get_blob_properties())
 
     @property
     def url(self) -> str:

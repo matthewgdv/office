@@ -72,7 +72,7 @@ class Message(message.Message):
         from iotools import HtmlGui
         HtmlGui(name=self.subject, text=self.body).start()
 
-    def save_attachments_to(self, path: PathLike) -> List[File]:
+    def save_attachments_to(self, path: PathLike) -> list[File]:
         """Save all attachments of this message to the given folder path."""
         if not self.has_attachments:
             return []
@@ -160,7 +160,7 @@ class MessageQuery(Query):
         """Perform a bulk action on the resultset of this query."""
         return BulkMessageAction(self)
 
-    def execute(self) -> List[Message]:
+    def execute(self) -> list[Message]:
         """Execute this query and return any messages that match."""
         return list(self._container.get_messages(limit=self._limit, query=self._query))
 

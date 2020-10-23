@@ -80,7 +80,7 @@ class ContactQuery(Query):
         """Perform a bulk action on the resultset of this query."""
         return BulkContactAction(self)
 
-    def execute(self) -> List[Contact]:
+    def execute(self) -> list[Contact]:
         """Execute this query and return any contacts that match."""
         return self._container.get_contacts(limit=self._limit, query=self._query)
 

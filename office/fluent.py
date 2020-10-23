@@ -44,11 +44,11 @@ class FluentEntity:
         self.entity.importance = importance_level
         return self
 
-    def categories(self, categories: List[str]) -> FluentEntity:
+    def categories(self, categories: list[str]) -> FluentEntity:
         self.entity.categories = categories
         return self
 
-    def _parse_contacts_to_emails(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> List[str]:
+    def _parse_contacts_to_emails(self, contacts: Union[Union[str, Contact], Collection[Union[str, Contact]]]) -> list[str]:
         from .people import Contact
 
         if isinstance(contacts, str):
