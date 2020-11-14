@@ -89,6 +89,9 @@ class BlobContainer:
     def properties(self) -> Dict:
         return Dict(self.client.get_container_properties())
 
+    def upload_file(self, file: PathLike, name: str = None) -> UploadAccessor:
+        return self[name if name else File.from_pathlike(file).name].upload.from_file(file)
+
     def delete(self) -> None:
         if list(self):
             raise PermissionError(f"May not delete non-empty ({len(self)} blobs found) container '{self.name}'.")
